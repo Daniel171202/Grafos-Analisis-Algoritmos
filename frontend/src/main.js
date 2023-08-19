@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 
+
 import App from "./App.vue";
 import VNetworkGraph from "v-network-graph";
 import "v-network-graph/lib/style.css";

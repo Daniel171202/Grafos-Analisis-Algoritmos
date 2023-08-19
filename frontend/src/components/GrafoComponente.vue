@@ -1,31 +1,31 @@
 <template>
-    <div class="demo-control-panel appearance">
-      <div>
-        <label>Node:</label>
-        <el-button @click="addSkyBlueNode">Add SkyBlue</el-button>
-        <el-button @click="addHotPinkNode">Add HotPink</el-button>
-        <el-button @click="addGrayNode">Add Gray</el-button>
-        <el-button @click="addBlackNode">Add Black</el-button>
-        <el-button :disabled="selectedNodes.length == 0" @click="removeNode"
-          >Remove</el-button
+    <div class="demo-control-panel appearance" id="controlPanel"> 
+      <div class="nodos">
+        <label>Nodos:</label>
+        <button class="btn-control-panel" @click="addSkyBlueNode">Agregar Nodo Celeste</button>
+        <button class="btn-control-panel" @click="addHotPinkNode">Agregar Nodo Rosado</button>
+        <button class="btn-control-panel" @click="addGrayNode">Agregar Nodo Gris</button>
+        <button class="btn-control-panel" @click="addBlackNode">Agregar Nodo Negro</button>
+        <button class="btn-control-panel" :disabled="selectedNodes.length == 0" @click="removeNode"
+          >Eliminar</button
         >
       </div>
-      <div>
-        <label>Edge:</label>
-        <el-button :disabled="!isEdgeAddable()" @click="addSkyBlueEdge"
-          >Add SkyBlue</el-button
+      <div class="vertices">
+        <label>Vértices:</label>
+        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addSkyBlueEdge"
+          >Conexión Celeste</button
         >
-        <el-button :disabled="!isEdgeAddable()" @click="addHotPinkEdge"
-          >Add HotPink</el-button
+        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addHotPinkEdge"
+          >Conexión Rosado</button
         >
-        <el-button :disabled="!isEdgeAddable()" @click="addGrayEdge"
-          >Add Gray</el-button
+        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addGrayEdge"
+          >Conexión Gris</button
         >
-        <el-button :disabled="!isEdgeAddable()" @click="addBlackEdge"
-          >Add Black</el-button
+        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addBlackEdge"
+          >Conexión Negro</button
         >
-        <el-button :disabled="selectedEdges.length == 0" @click="removeEdge"
-          >Remove</el-button
+        <button class="btn-control-panel" :disabled="selectedEdges.length == 0" @click="removeEdge"
+          >Eliminar Vértice</button
         >
       </div>
     </div>
@@ -152,7 +152,38 @@
   
   </script>
   
-  <style scoped>
+  <style>
+
+
+  #controlPanel{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 15vh;
+    min-width: 100vw;
+    padding: 1%;
+  }
+
+  #controlPanel .nodos{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    margin: 2% 0;
+  }
+  #controlPanel .vertices{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+  }
+
+  #controlPanel .btn-control-panel{
+    height: 15%;
+    min-width: 25%;
+  }
+  
   .v-network-graph {
     width: 100vw;
     height: 100vh;
@@ -197,4 +228,39 @@
     background-color: #ccc;
     cursor: not-allowed;
   }
+
+
+  #controlPanel .nodos .btn-control-panel,
+  #controlPanel .vertices .btn-control-panel {
+    font-size: 1rem;
+  background: #fff;
+  color: #4A5568;
+  border: 0px solid #A0AEC0;
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .2s ease;
+  box-shadow: 0 0 0 #BEE3F8;
+  transform: translateY(0);
+  }
+
+  #controlPanel .nodos .btn-control-panel:first-of-type,
+  #controlPanel .vertices .btn-control-panel:first-of-type{
+    border-radius: 0.5em 0 0 0.5em;
+    margin: 0% 0% 0% 5%;
+  }
+  #controlPanel .vertices .btn-control-panel:last-of-type,
+  #controlPanel .nodos .btn-control-panel:last-of-type{
+    border-radius: 0 0.5em 0.5em 0;
+    margin: 0% 5% 0% 0%;
+  }
+
+  #controlPanel:hover .btn-control-panel {
+    color: #a0aec0;
+  }
+
+  #controlPanel:hover .btn-control-panel:hover {
+    background: #d53f8c;
+    color: #fff;
+    box-shadow: 0 0 0.8em 0 rgba(213, 63, 140, 0.8);
+    transform: translateY(-0.2em);
+  }
+
   </style>
