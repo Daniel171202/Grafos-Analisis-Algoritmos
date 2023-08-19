@@ -23,22 +23,35 @@
         crossorigin="anonymous"
       />
     </head>
-  <body>
-    <div class="home">
-    <h1>Bienvenido a la Página de Algoritmos</h1>
-    <div class="botones-home">
-      <button class="opciones" @click="goToPage('/grafo')">
-        <span class="move"><i class="fas fa-cogs fa-bounce"></i><a> Ir a nodos</a></span>
-      </button>
-      <button class="opciones" @click="goToPage('/tercera-pagina')"><span class="move"><i class="fas fa-th fa-bounce"></i><a> Ir a Matriz</a></span></button>
-    </div>
-  </div>
-  </body>
+      <div>
+        <div style="height: 20vh; width: 100vw; margin-top: 30vh;">
+          <nav-bar></nav-bar>
+
+        </div>
+        <body>
+
+      <div class="home">
+      <h1>Bienvenido a la Página de Algoritmos</h1>
+      <div class="botones-home">
+        <button class="opciones" @click="goToPage('/grafo')">
+          <span class="move"><i class="fas fa-cogs fa-bounce"></i><a> Ir a nodos</a></span>
+        </button>
+        <button class="opciones" @click="goToPage('/tercera-pagina')"><span class="move"><i class="fas fa-th fa-bounce"></i><a> Ir a Matriz</a></span></button>
+      </div>
+      </div>
+      </body>
+        
+      </div>
+ 
 </template>
 
 
 <script>
+import NavBar from './navBar.vue'
 export default {
+  components: {
+    NavBar
+  },
   methods: {
     goToPage(route) {
       this.$router.push(route);
