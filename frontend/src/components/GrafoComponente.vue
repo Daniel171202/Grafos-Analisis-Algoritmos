@@ -58,6 +58,11 @@
   
   const configs = reactive(
     vNG.defineConfigs({
+      view:{
+        scalingObjects:true,
+        minZoomLevel: 2,
+        zoomEnabled: false,
+      },
       node: {
         normal: {
           type: "circle",
