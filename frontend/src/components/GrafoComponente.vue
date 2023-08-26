@@ -75,6 +75,27 @@
           color: (edge) => edge.color,
           dasharray: (edge) => (edge.dashed ? "4" : "0"),
         },
+
+        marker: {
+          source: {
+            type: "none",
+            width: 4,
+            height: 4,
+            margin: -1,
+            offset: 0,
+            units: "strokeWidth",
+            color: null,
+          },
+          target: {
+            type: "arrow",
+            width: 4,
+            height: 4,
+            margin: -1,
+            offset: 0,
+            units: "strokeWidth",
+            color: null,
+          },
+        },
       },
     })
   );
@@ -174,6 +195,15 @@
     return matrix;
 }
   
+  
+
+
+
+
+
+
+
+
   
   
   </script>
