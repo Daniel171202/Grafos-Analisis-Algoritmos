@@ -105,7 +105,8 @@
     const name = `Node ${nextNodeIndex.value}`;
     nodes[nodeId] = { name, ...node };
     nextNodeIndex.value++;
-    console.log(nodes);
+    
+    console.log(createAdjacencyMatrix(nodes,edges));
   }
   
   function removeNode() {
@@ -147,6 +148,31 @@
   function isEdgeAddable() {
     return selectedNodes.value.length == 2;
   }
+
+  function createAdjacencyMatrix(nodesJSON, edgesJSON) {
+    const nodes = nodesJSON;
+    const edges = edgesJSON;
+    
+    const nodeKeys = Object.keys(nodes);
+    const nodeIndexMap = {};
+    
+    nodeKeys.forEach((key, index) => {
+        nodeIndexMap[key] = index;
+    });
+    
+    const matrix = Array.from({ length: nodeKeys.length }, () =>
+        Array.from({ length: nodeKeys.length }, () => 0)
+    );
+    
+    Object.values(edges).forEach((edge) => {
+        const sourceIndex = nodeIndexMap[edge.source];
+        const targetIndex = nodeIndexMap[edge.target];
+        
+        matrix[sourceIndex][targetIndex] = 1; // You can also set edge properties if needed
+    });
+    
+    return matrix;
+}
   
   
   
