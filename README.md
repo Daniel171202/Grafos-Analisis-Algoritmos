@@ -5,7 +5,7 @@ cd frontend
 ```
 Instalar librerias
 ```
-npm intall
+npm install
 ```
 correr el proyecto
 ```
