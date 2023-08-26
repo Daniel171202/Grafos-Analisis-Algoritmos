@@ -9,7 +9,7 @@ const nodes = reactive({
 });
 
 const edges = reactive({
-  edge1: { source: "node1", target: "node2", width: 1, color: "black" , label: "edge1"},
+  edge1: { source: "node1", target: "node2", width: 1, color: "black" , label: "edge1",cost: 10},
   edge2: { source: "node2", target: "node3", width: 5, color: "gray", dashed: true },
   edge3: { source: "node3", target: "node4", width: 1, color: "black" },
   edge4: { source: "node3", target: "node4", width: 3, color: "skyblue" },

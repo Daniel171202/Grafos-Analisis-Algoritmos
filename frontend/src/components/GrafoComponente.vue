@@ -24,7 +24,7 @@
         <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addBlackEdge"
           >Conexión Negro</button
         >
-        <button class="btn-control-panel" :disabled="selectedEdges.length == 0" @click="removeEdge"
+        <button  class="btn-control-panel" :disabled="selectedEdges.length == 0" @click="removeEdge"
           >Eliminar Vértice</button
         >
       </div>
@@ -37,7 +37,11 @@
       :edges="edges"
       :layouts="data.layouts"
       :configs="configs"
-    />
+    >
+    <template #edge-label="{ edge, ...slotProps }">
+      <v-edge-label  :text=" nameofEdge(edge)" align="center" vertical-align="above" v-bind="slotProps" />
+    </template>
+  </v-network-graph>
   </template>
   
   <script setup>
@@ -45,6 +49,9 @@
   import data from "../assets/data.js";
   import "v-network-graph/lib/style.css";
   import * as vNG from "v-network-graph";
+
+
+  
   
   const nodes = reactive({ ...data.nodes });
   const edges = reactive({ ...data.edges });
@@ -75,7 +82,7 @@
           color: (edge) => edge.color,
           dasharray: (edge) => (edge.dashed ? "4" : "0"),
         },
-
+        // estilo de la flecha de conexion 
         marker: {
           source: {
             type: "none",
@@ -194,6 +201,16 @@
     
     return matrix;
 }
+
+
+function nameofEdge(edge) {
+  const label = edge.label !== null ? edge.label : "";
+  const cost = edge.cost !== null ? edge.cost : "";
+  const aux = label || cost ? `${label}${label && cost ? ": " : ""}${cost}` : " ";
+  return aux;
+}
+
+
   
   
 
