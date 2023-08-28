@@ -7,6 +7,8 @@
           >Eliminar</button
         >
     </div>
+
+   
       <div class="vertices">
         <label>Vértices:</label>
         <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addSkyBlueEdge"
@@ -33,7 +35,7 @@
     :nodes="nodes"
     :edges="edges"
     
-    
+    :layouts="layouts"
     :configs="configs"
     @dblclick ="addNodeOnDoubleClick"
   >
