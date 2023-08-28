@@ -1,15 +1,12 @@
 <template>
-    <div class="demo-control-panel appearance" id="controlPanel"> 
-      <div class="nodos">
-        <label>Nodos:</label>
-        <button class="btn-control-panel" @click="addSkyBlueNode">Agregar Nodo Celeste</button>
-        <button class="btn-control-panel" @click="addHotPinkNode">Agregar Nodo Rosado</button>
-        <button class="btn-control-panel" @click="addGrayNode">Agregar Nodo Gris</button>
-        <button class="btn-control-panel" @click="addBlackNode">Agregar Nodo Negro</button>
-        <button class="btn-control-panel" :disabled="selectedNodes.length == 0" @click="removeNode"
+   <div class="demo-control-panel appearance" id="controlPanel">
+    <div class="nodos">
+      <label>Nodos:     </label>
+      
+      <button class="btn-control-panel" :disabled="selectedNodes.length == 0" @click="removeNode"
           >Eliminar</button
         >
-      </div>
+    </div>
       <div class="vertices">
         <label>Vértices:</label>
         <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addSkyBlueEdge"
@@ -31,13 +28,15 @@
     </div>
   
     <v-network-graph
-      v-model:selected-nodes="selectedNodes"
-      v-model:selected-edges="selectedEdges"
-      :nodes="nodes"
-      :edges="edges"
-      :layouts="data.layouts"
-      :configs="configs"
-    >
+    v-model:selected-nodes="selectedNodes"
+    v-model:selected-edges="selectedEdges"
+    :nodes="nodes"
+    :edges="edges"
+    
+    
+    :configs="configs"
+    @dblclick ="addNodeOnDoubleClick"
+  >
     <template #edge-label="{ edge, ...slotProps }">
       <v-edge-label  :text=" nameofEdge(edge)" align="center" vertical-align="above" v-bind="slotProps" />
     </template>
@@ -45,10 +44,10 @@
   </template>
   
   <script setup>
-  import { reactive, ref } from "vue";
-  import data from "../assets/data.js";
-  import "v-network-graph/lib/style.css";
-  import * as vNG from "v-network-graph";
+import { reactive, ref } from "vue";
+import data from "../assets/data.js";
+import "v-network-graph/lib/style.css";
+import * as vNG from "v-network-graph";
 
 
   
@@ -112,37 +111,6 @@
   const selectedNodes = ref([]);
   const selectedEdges = ref([]);
   
-  function addSkyBlueNode() {
-    addNode({ size: 24, color: "lightskyblue", label: true });
-  }
-  
-  function addHotPinkNode() {
-    addNode({ size: 32, color: "hotpink", label: true });
-  }
-  
-  function addGrayNode() {
-    addNode({ size: 16, color: "gray", label: false });
-  }
-  
-  function addBlackNode() {
-    addNode({ size: 48, color: "black", label: false });
-  }
-  
-  function addNode(node) {
-    const nodeId = `node${nextNodeIndex.value}`;
-    const name = `Node ${nextNodeIndex.value}`;
-    nodes[nodeId] = { name, ...node };
-    nextNodeIndex.value++;
-    
-    console.log(createAdjacencyMatrix(nodes,edges));
-  }
-  
-  function removeNode() {
-    for (const nodeId of selectedNodes.value) {
-      delete nodes[nodeId];
-    }
-  }
-  
   function addSkyBlueEdge() {
     addEdge({ width: 3, color: "skyblue" });
   }
@@ -177,31 +145,6 @@
     return selectedNodes.value.length == 2;
   }
 
-  function createAdjacencyMatrix(nodesJSON, edgesJSON) {
-    const nodes = nodesJSON;
-    const edges = edgesJSON;
-    
-    const nodeKeys = Object.keys(nodes);
-    const nodeIndexMap = {};
-    
-    nodeKeys.forEach((key, index) => {
-        nodeIndexMap[key] = index;
-    });
-    
-    const matrix = Array.from({ length: nodeKeys.length }, () =>
-        Array.from({ length: nodeKeys.length }, () => 0)
-    );
-    
-    Object.values(edges).forEach((edge) => {
-        const sourceIndex = nodeIndexMap[edge.source];
-        const targetIndex = nodeIndexMap[edge.target];
-        
-        matrix[sourceIndex][targetIndex] = 1; // You can also set edge properties if needed
-    });
-    
-    return matrix;
-}
-
 
 function nameofEdge(edge) {
   const label = edge.label !== null ? edge.label : "";
@@ -210,8 +153,29 @@ function nameofEdge(edge) {
   return aux;
 }
 
+function removeNode() {
+    for (const nodeId of selectedNodes.value) {
+      delete nodes[nodeId];
+    }
+  }
 
-  
+function addNode(node) {
+  const nodeId = `node${nextNodeIndex.value}`;
+  const name = `Node ${nextNodeIndex.value}`;
+  nodes[nodeId] = { name, ...node };
+  nextNodeIndex.value++;
+}
+
+function addNodeOnDoubleClick(event) {
+  const newNode = {
+    size: 24,
+    color: "lightskyblue",
+    label: true,
+    x: event.offsetX, // X-coordinates based on the click position
+    y: event.offsetY, // Y-coordinates based on the click position
+  };
+  addNode(newNode);
+}
   
 
 
