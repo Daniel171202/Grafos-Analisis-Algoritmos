@@ -1,33 +1,42 @@
 <template>
-  <div class="demo-control-panel appearance" id="controlPanel">
-    <div class="nodos">
+  <div>
+    <button class="burger-button" @click="toggleSidebar">
+      <div class="burger-line line-1"></div>
+        <div class="burger-line middle line-2"></div>
+        <div class="burger-line line-3"></div>
+    </button>
+    <div class="sidebar" :class="{'show-sidebar': showSidebar}">
+      <h3>Menú</h3>
       <label>Nodos:</label>
-      <button class="btn-control-panel" @click="addSkyBlueNode">Agregar Nodo Celeste</button>
-      <button class="btn-control-panel" @click="addHotPinkNode">Agregar Nodo Rosado</button>
-      <button class="btn-control-panel" @click="addGrayNode">Agregar Nodo Gris</button>
-      <button class="btn-control-panel" @click="addBlackNode">Agregar Nodo Negro</button>
-      <button class="btn-control-panel" :disabled="selectedNodes.length == 0" @click="removeNode">Eliminar</button>
-    </div>
-    <div class="vertices">
+      <div class="buttons">
+        <button class="btn-control-panel" @click="addSkyBlueNode">Agregar Nodo Celeste</button>
+        <button class="btn-control-panel" @click="addHotPinkNode">Agregar Nodo Rosado</button>
+        <button class="btn-control-panel" @click="addGrayNode">Agregar Nodo Gris</button>
+        <button class="btn-control-panel" @click="addBlackNode">Agregar Nodo Negro</button>
+        <button class="btn-control-panel" :disabled="selectedNodes.length == 0" @click="removeNode">Eliminar</button>
+      </div>
       <label>Vértices:</label>
-      <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addSkyBlueEdge">Conexión Celeste</button>
-      <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addHotPinkEdge">Conexión Rosado</button>
-      <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addGrayEdge">Conexión Gris</button>
-      <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addBlackEdge">Conexión Negro</button>
-      <button class="btn-control-panel" :disabled="selectedEdges.length == 0" @click="removeEdge">Eliminar
-        Vértice</button>
+      <div class="buttons">
+        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addSkyBlueEdge">Conexión Celeste</button>
+        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addHotPinkEdge">Conexión Rosado</button>
+        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addGrayEdge">Conexión Gris</button>
+        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addBlackEdge">Conexión Negro</button>
+        <button class="btn-control-panel" :disabled="selectedEdges.length == 0" @click="removeEdge">Eliminar
+          Vértice</button>
+      </div>
+      <label>Extras:</label>
+      <div class="buttons">
+        <button @click="showMatrixModal" class="btn-control-panel">Ver Matriz de Adyacencia</button>
+      </div>
     </div>
   </div>
 
-  <v-network-graph v-model:selected-nodes="selectedNodes" v-model:selected-edges="selectedEdges" :nodes="nodes" @dblclick ="addNodeOnDoubleClick"
-
-    :edges="edges" :layouts="data.layouts" :configs="configs">
+  <v-network-graph v-model:selected-nodes="selectedNodes" v-model:selected-edges="selectedEdges" :nodes="nodes"
+    @dblclick="addNodeOnDoubleClick" :edges="edges" :layouts="data.layouts" :configs="configs">
     <template #edge-label="{ edge, ...slotProps }">
       <v-edge-label :text="nameofEdge(edge)" align="center" vertical-align="above" v-bind="slotProps" />
     </template>
   </v-network-graph>
-
-  <button @click="showMatrixModal" class="btn-control-panel">Ver Matriz de Adyacencia</button>
 
   <div class="modal" v-if="isMatrixModalVisible">
     <div class="modal-content">
@@ -61,6 +70,7 @@ const edges = reactive({ ...data.edges });
 
 var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
+const showSidebar = ref(false);
 
 const configs = reactive(
   vNG.defineConfigs({
@@ -131,6 +141,11 @@ function hideMatrixModal() {
   isMatrixModalVisible.value = false;
 }
 
+function toggleSidebar() {
+  showSidebar.value = !showSidebar.value;
+  console.log(showSidebar.value);
+}
+
 function addSkyBlueNode() {
   addNode({ size: 24, color: "lightskyblue", label: true });
 }
@@ -152,11 +167,11 @@ function addNode(node, x, y) {
   const name = `Node ${nextNodeIndex.value}`;
   nodes[nodeId] = { name, ...node };
   nextNodeIndex.value++;
-  
+
   if (typeof x !== 'undefined' && typeof y !== 'undefined') {
     data.layouts.nodes[nodeId] = { x, y };
   }
- 
+
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 }
 
@@ -241,10 +256,10 @@ function addNodeOnDoubleClick(event) {
     x: event.offsetX, // X-coordinates based on the click position
     y: event.offsetY, // Y-coordinates based on the click position
   };
-  console.log(event.clientX,event.clientY);
+  console.log(event.clientX, event.clientY);
   // get the x and y position of the first node
 
-  addNode(newNode,event.clientX,event.clientY);
+  addNode(newNode, event.clientX, event.clientY);
 }
 
 
@@ -287,22 +302,17 @@ function nameofEdge(edge) {
   return aux;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
   
 <style>
+
+body {
+  margin: 0;
+  height: 100%;
+  overflow-x: hidden;
+  padding: 0% !important;
+}
+
 #controlPanel {
   display: flex;
   justify-content: center;
@@ -334,6 +344,8 @@ function nameofEdge(edge) {
 }
 
 .v-network-graph {
+  padding: 0;
+  margin: 0;
   width: 100vw;
   height: 100vh;
 }
@@ -414,6 +426,12 @@ function nameofEdge(edge) {
   transform: translateY(-0.2em);
 }
 
+.btn-control-panel {
+  width: 100px;
+  max-width: 100px;
+  margin: 5px;
+}
+
 .modal {
   display: none;
   position: fixed;
@@ -435,7 +453,7 @@ function nameofEdge(edge) {
   width: 80%;
   max-width: 600px;
   position: relative;
-  text-align: center; /* Alinea el contenido en el centro del modal */
+  text-align: center;
 }
 
 .close {
@@ -467,5 +485,87 @@ function nameofEdge(edge) {
 
 .adjacency-matrix td {
   background-color: #fff;
+}
+
+.sidebar {
+  width: 250px;
+  position: fixed;
+  top: 0;
+  left: -260px;
+  height: calc(100vh - 20px);
+  background-color: rgba(255, 255, 255, 0.5);
+  overflow-x: hidden;
+  transition: left 0.5s;
+  padding-top: 20px;
+  padding-left: 10px;
+  z-index: 1;
+  backdrop-filter: blur(5px);
+  border: 1px solid #ccc;
+}
+
+.show-sidebar {
+  left: 0;
+}
+
+.sidebar a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: white;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidebar a:hover {
+  color: #3498db;
+}
+
+.burger-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  padding: 10px 15px;
+  z-index: 2;
+}
+
+.burger-button:hover {
+  background-color: #3498db;
+}
+
+.burger-line {
+            width: 100%;
+            height: 4px;
+            background-color: #333; 
+            transition: 0.4s; 
+        }
+
+        .burger-line.middle {
+            width: 50%; 
+        }
+
+        
+        .burger-button.active .line-1 {
+            transform: rotate(-45deg) translate(-5px, 5px);
+        }
+
+        .burger-button.active .line-2 {
+            opacity: 0;
+        }
+
+        .burger-button.active .line-3 {
+            transform: rotate(45deg) translate(-5px, -5px);
+        }
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 2% 0;
 }
 </style>
