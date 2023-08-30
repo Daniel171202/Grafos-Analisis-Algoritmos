@@ -19,7 +19,8 @@
     </div>
   </div>
 
-  <v-network-graph v-model:selected-nodes="selectedNodes" v-model:selected-edges="selectedEdges" :nodes="nodes"
+  <v-network-graph v-model:selected-nodes="selectedNodes" v-model:selected-edges="selectedEdges" :nodes="nodes" @dblclick ="addNodeOnDoubleClick"
+
     :edges="edges" :layouts="data.layouts" :configs="configs">
     <template #edge-label="{ edge, ...slotProps }">
       <v-edge-label :text="nameofEdge(edge)" align="center" vertical-align="above" v-bind="slotProps" />
@@ -146,15 +147,19 @@ function addBlackNode() {
   addNode({ size: 48, color: "black", label: false });
 }
 
-function addNode(node) {
+function addNode(node, x, y) {
   const nodeId = `node${nextNodeIndex.value}`;
   const name = `Node ${nextNodeIndex.value}`;
   nodes[nodeId] = { name, ...node };
   nextNodeIndex.value++;
-
-  console.log(createAdjacencyMatrix(nodes, edges));
+  
+  if (typeof x !== 'undefined' && typeof y !== 'undefined') {
+    data.layouts.nodes[nodeId] = { x, y };
+  }
+ 
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 }
+
 
 function removeNode() {
   for (const nodeId of selectedNodes.value) {
@@ -226,6 +231,20 @@ function createAdjacencyMatrix(nodes, edges) {
   }
 
   return matrix;
+}
+
+function addNodeOnDoubleClick(event) {
+  const newNode = {
+    size: 24,
+    color: "lightskyblue",
+    label: true,
+    x: event.offsetX, // X-coordinates based on the click position
+    y: event.offsetY, // Y-coordinates based on the click position
+  };
+  console.log(event.clientX,event.clientY);
+  // get the x and y position of the first node
+
+  addNode(newNode,event.clientX,event.clientY);
 }
 
 
