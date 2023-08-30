@@ -1,9 +1,7 @@
 <template>
   <div>
     <button class="burger-button" @click="toggleSidebar">
-      <div class="burger-line line-1"></div>
-        <div class="burger-line middle line-2"></div>
-        <div class="burger-line line-3"></div>
+      <img src="../assets/hamburger-menu-svgrepo-com.svg" width="33" height="33"> 
     </button>
     <div class="sidebar" :class="{'show-sidebar': showSidebar}">
       <h3>Menú</h3>
@@ -524,42 +522,18 @@ body {
   position: fixed;
   top: 20px;
   left: 20px;
-  background-color: #333;
+  background-color: transparent;
   color: white;
   border: none;
   cursor: pointer;
   font-size: 24px;
-  padding: 10px 15px;
   z-index: 2;
+  transition: 0.3s;
 }
 
 .burger-button:hover {
-  background-color: #3498db;
+  transform: scale(1.2);
 }
-
-.burger-line {
-            width: 100%;
-            height: 4px;
-            background-color: #333; 
-            transition: 0.4s; 
-        }
-
-        .burger-line.middle {
-            width: 50%; 
-        }
-
-        
-        .burger-button.active .line-1 {
-            transform: rotate(-45deg) translate(-5px, 5px);
-        }
-
-        .burger-button.active .line-2 {
-            opacity: 0;
-        }
-
-        .burger-button.active .line-3 {
-            transform: rotate(45deg) translate(-5px, -5px);
-        }
 
 .buttons {
   display: flex;
