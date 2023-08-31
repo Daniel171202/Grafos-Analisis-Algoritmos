@@ -116,7 +116,6 @@
       </div>
     </div>
 
-    
     <!--@dblclick="addNodeOnDoubleClick"  ES DENTRO DE V-NETWORK-->
     <v-network-graph
       v-model:selected-nodes="selectedNodes"
@@ -160,30 +159,29 @@
         <span class="close" @click="hideNodoModal">&times;</span>
         <h3>Nombre Nodo:</h3>
         <label>Nombre:</label>
-         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
-         <input type="text" v-model="nodes[actualNodeIndex].name" />
-        <button class="btn-control-panel" @click="hideNodoModal">Aceptar</button>
-       
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <input type="text" v-model="nodes[actualNodeIndex].name" />
+        <button class="btn-control-panel" @click="hideNodoModal">
+          Aceptar
+        </button>
       </div>
     </div>
-
 
     <div class="modal3" v-if="isEdgeModalVisible">
       <div class="modal-content">
         <span class="close" @click="hideEdgeModal">&times;</span>
-        <h3>Nombre Conexion:</h3>
+        <h3>Nombre Conexión:</h3>
         <label>Nombre:</label>
-         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
-         <input type="text" v-model="edges[actualEdgeIndex].label" />
-          <br>
-         <label>Peso: </label>
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <input type="text" v-model="edges[actualEdgeIndex].label" />
+        <br />
+        <label>Peso: </label>
         <input type="number" v-model="edges[actualEdgeIndex].cost" />
-        <button class="btn-control-panel" @click="hideEdgeModal">Aceptar</button>
-       
+        <button class="btn-control-panel" @click="hideEdgeModal">
+          Aceptar
+        </button>
       </div>
     </div>
-    
-
   </div>
 </template>
 
@@ -193,7 +191,6 @@ import { useRouter } from "vue-router";
 import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
-
 
 /**SCRIPTS MENU EMERGENTE*/
 
@@ -225,7 +222,6 @@ function toggleMenu(clickX, clickY) {
 const nodes = reactive({ ...data.nodes });
 const edges = reactive({ ...data.edges });
 
-
 var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
 const isNodoModalVisible = ref(false);
@@ -239,13 +235,11 @@ const configs = reactive(
       scalingObjects: true,
       minZoomLevel: 1,
       zoomEnabled: true,
-      doubleClickZoomEnabled: false , // Whether to zoom with double click. default: true
-      mouseWheelZoomEnabled:  true ,
+      doubleClickZoomEnabled: false, // Whether to zoom with double click. default: true
+      mouseWheelZoomEnabled: true,
       panEnabled: true,
-      autoPanAndZoomOnLoad: 'fit-content',
+      autoPanAndZoomOnLoad: "fit-content",
       maxZoomLevel: 2,
-
-
     },
     node: {
       normal: {
@@ -306,15 +300,11 @@ const router = useRouter();
 function showMatrixModal() {
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   isMatrixModalVisible.value = true;
-
-
-
 }
 
 function hideMatrixModal() {
   isMatrixModalVisible.value = false;
 }
-
 
 function showNodoModal() {
   isNodoModalVisible.value = true;
@@ -331,7 +321,6 @@ function showEdgeModal() {
 function hideEdgeModal() {
   isEdgeModalVisible.value = false;
 }
-
 
 function toggleSidebar() {
   showSidebar.value = !showSidebar.value;
@@ -359,7 +348,6 @@ function addGrayNode() {
 function addBlackNode() {
   addNode({ size: 48, color: "black", label: false });
 }
-
 
 function addNode(node, x, y) {
   const nodeId = `node${nextNodeIndex.value}`;
@@ -409,7 +397,6 @@ function addEdge(edge) {
   console.log(edges);
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   showEdgeModal();
-
 }
 
 function removeEdge() {
@@ -417,7 +404,6 @@ function removeEdge() {
     console.log(edgeId);
     delete edges[edgeId];
   }
-
 
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 }
@@ -549,7 +535,6 @@ body {
   margin: 0;
   width: 100%;
   height: 98vh;
-  
 }
 
 .demo-container {
@@ -565,8 +550,6 @@ body {
   border-radius: 5px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
-
-
 
 .control-group {
   margin-bottom: 10px;
@@ -632,7 +615,20 @@ body {
 
 .btn-control-panel {
   width: 100%;
-  height: 100%;
+  height: 50%;
+  margin: 2%;
+  padding: 3%;
+  border-radius: 25px;
+  transition: ease-in 0.5s;
+  background-color: #ffdfd0;
+  color: #000;
+}
+
+.modal .btn-control-panel,
+.modal2 .btn-control-panel,
+.modal3 .btn-control-panel {
+  width: 50%;
+  height: auto;
   margin: 2%;
   padding: 3%;
   border-radius: 25px;
@@ -655,7 +651,7 @@ body {
   z-index: 1;
   left: 0;
   top: 0;
-  width: 50%;
+  width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
   justify-content: center;
@@ -692,9 +688,43 @@ body {
   background-color: #fff;
   padding: 2.5%;
   border: 1px solid #888;
-  width: 80%;
+  width: 50%;
+  height: 50%;
+  border-radius: 25px;
   position: relative;
   text-align: center;
+}
+
+.modal2 .modal-content,
+.modal3 .modal-content {
+  /**  background-color: #fff;
+ */
+  padding: 2.5%;
+  border: 1px solid #888;
+  width: 50%;
+  height: 25%;
+  border-radius: 25px;
+  position: relative;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: linear-gradient(90deg, #e3ffe7 0%, #d9e7ff 100%);
+}
+
+.modal2 .modal-content h3,
+.modal3 .modal-content h3 {
+  margin-top: -2%;
+  font-size: 2.2rem;
+  color: #c63637;
+}
+
+.modal2 .modal-content input,
+.modal3 .modal-content input {
+  height: auto;
+  width: 50%;
+  font-size: 1rem;
 }
 
 .close {
@@ -789,6 +819,7 @@ body {
   .sidebar {
     width: 60%;
     padding: 20% 7%;
+    transform: scale(0.9);
   }
   .modal-content {
     padding: 2.5% 0;
@@ -810,6 +841,27 @@ body {
     border-collapse: collapse;
     width: 100%;
     transform: scale(0.8);
+  }
+  .modal2 .modal-content,
+  .modal3 .modal-content {
+    /**  background-color: #fff;
+ */
+    width: 90%;
+    height: 50%;
+  }
+
+  .modal2 .modal-content h3,
+  .modal3 .modal-content h3 {
+    font-size: 1.5rem;
+    color: #c63637;
+  }
+
+  .modal2 .modal-content input,
+  .modal3 .modal-content input {
+    margin-top: 0%;
+    height: 7%;
+    width: 75%;
+    font-size: 0.7rem;
   }
 }
 
