@@ -1,59 +1,73 @@
 <template>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-      integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ"
+      crossorigin="anonymous"
+    />
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
-      integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp"
+      crossorigin="anonymous"
+    />
   </head>
   <div>
-    <div style="height: 20vh; width: 100vw; margin-top: 30vh;">
-      <nav-bar></nav-bar>
+    <!--<div style="height: 20vh; width: 100vw; margin-top: 30vh">
+        <nav-bar></nav-bar>
 
-    </div>
+    </div>-->
 
     <body>
-
-      <div class="home container" >
+      <div class="home container">
         <h1>Bienvenido a la Página de Algoritmos</h1>
         <div class="botones-home row">
           <button class="opciones col-md-4" @click="goToPage('/grafo')">
-            <span class="move"><i class="fas fa-cogs fa-bounce"></i><a> Ir a nodos</a></span>
+            <span class="move"
+              ><i class="fas fa-cogs fa-bounce"></i><a> Ir a Grafos</a></span
+            >
           </button>
-          <button class="opciones col-md-4" @click="goToPage('/tercera-pagina')"><span class="move"><i
-                class="fas fa-th fa-bounce"></i><a> Ir a Matriz</a></span></button>
+          <!--<button class="opciones col-md-4" @click="goToPage('/tercera-pagina')"><span class="move"><i
+                class="fas fa-th fa-bounce"></i><a> Ir a Matriz</a></span></button>-->
         </div>
       </div>
     </body>
-
   </div>
 </template>
 
-
 <script>
-import NavBar from './navBar.vue'
+//import NavBar from "./navBar.vue";
 export default {
   components: {
-    NavBar
+    //NavBar,
   },
   methods: {
     goToPage(route) {
       this.$router.push(route);
-    }
-  }
+    },
+  },
 };
 </script>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
-
+<style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap");
 
 * {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -68,6 +82,8 @@ body {
 
 .home {
   display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
   width: 100%;
   height: 100%;
@@ -76,6 +92,7 @@ body {
 
 .home h1 {
   font-size: 5rem;
+  font-weight: 700;
 }
 
 .botones-home {
@@ -83,8 +100,9 @@ body {
   align-items: center;
   justify-content: center;
   flex-direction: row;
-  min-height: 25%;
+  min-height: 35%;
   width: 100%;
+  border-radius: 20px;
 }
 
 .home .botones-home .opciones {
@@ -95,6 +113,8 @@ body {
   height: 25%;
   margin: 1% 5%;
   font-size: 2rem;
+  border-radius: 20px;
+  transition: ease-in 0.5s;
 }
 
 .home .botones-home .opciones .move {
@@ -113,5 +133,16 @@ body {
 
 .home .botones-home .opciones:hover .move a {
   opacity: 1;
+}
+
+@media screen and (max-width: 440px) {
+  .home h1 {
+    font-size: 3rem;
+    font-weight: 700;
+  }
+  .home .botones-home .opciones {
+    font-size: 1.5rem;
+    border-radius: 20px;
+  }
 }
 </style>

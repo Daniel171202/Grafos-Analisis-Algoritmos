@@ -1,38 +1,109 @@
 <template>
   <div>
     <button class="burger-button" @click="toggleSidebar">
-      <img src="../assets/hamburger-menu-svgrepo-com.svg" width="33" height="33"> 
+      <img
+        src="../assets/hamburger-menu-svgrepo-com.svg"
+        width="33"
+        height="33"
+      />
     </button>
-    <div class="sidebar" :class="{'show-sidebar': showSidebar}">
-      <h3>Menú</h3>
+    <div class="menu" v-if="menuVisible"></div>
+
+    <div class="sidebar" :class="{ 'show-sidebar': showSidebar }">
+      <!--      <h3>Menú</h3>
+-->
+      <div></div>
+      <label>Volver: </label>
+      <div class="buttons">
+        <button class="btn-control-panel" @click="backToHomePage">
+          A La Página Principal
+        </button>
+      </div>
       <label>Nodos:</label>
       <div class="buttons">
-        <button class="btn-control-panel" @click="addSkyBlueNode">Agregar Nodo Celeste</button>
-        <button class="btn-control-panel" @click="addHotPinkNode">Agregar Nodo Rosado</button>
-        <button class="btn-control-panel" @click="addGrayNode">Agregar Nodo Gris</button>
-        <button class="btn-control-panel" @click="addBlackNode">Agregar Nodo Negro</button>
-        <button class="btn-control-panel" :disabled="selectedNodes.length == 0" @click="removeNode">Eliminar</button>
+        <button class="btn-control-panel" @click="addSkyBlueNode">
+          Agregar Nodo Celeste
+        </button>
+        <button class="btn-control-panel" @click="addHotPinkNode">
+          Agregar Nodo Rosado
+        </button>
+        <button class="btn-control-panel" @click="addGrayNode">
+          Agregar Nodo Gris
+        </button>
+        <button class="btn-control-panel" @click="addBlackNode">
+          Agregar Nodo Negro
+        </button>
+        <button
+          class="btn-control-panel"
+          :disabled="selectedNodes.length == 0"
+          @click="removeNode"
+        >
+          Eliminar
+        </button>
       </div>
       <label>Vértices:</label>
       <div class="buttons">
-        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addSkyBlueEdge">Conexión Celeste</button>
-        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addHotPinkEdge">Conexión Rosado</button>
-        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addGrayEdge">Conexión Gris</button>
-        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addBlackEdge">Conexión Negro</button>
-        <button class="btn-control-panel" :disabled="selectedEdges.length == 0" @click="removeEdge">Eliminar
-          Vértice</button>
+        <button
+          class="btn-control-panel"
+          :disabled="!isEdgeAddable()"
+          @click="addSkyBlueEdge"
+        >
+          Conexión Celeste
+        </button>
+        <button
+          class="btn-control-panel"
+          :disabled="!isEdgeAddable()"
+          @click="addHotPinkEdge"
+        >
+          Conexión Rosado
+        </button>
+        <button
+          class="btn-control-panel"
+          :disabled="!isEdgeAddable()"
+          @click="addGrayEdge"
+        >
+          Conexión Gris
+        </button>
+        <button
+          class="btn-control-panel"
+          :disabled="!isEdgeAddable()"
+          @click="addBlackEdge"
+        >
+          Conexión Negro
+        </button>
+        <button
+          class="btn-control-panel"
+          :disabled="selectedEdges.length == 0"
+          @click="removeEdge"
+        >
+          Eliminar Vértice
+        </button>
       </div>
       <label>Extras:</label>
       <div class="buttons">
-        <button @click="showMatrixModal" class="btn-control-panel">Ver Matriz de Adyacencia</button>
+        <button @click="showMatrixModal" class="btn-control-panel">
+          Ver Matriz de Adyacencia
+        </button>
       </div>
     </div>
   </div>
 
-  <v-network-graph v-model:selected-nodes="selectedNodes" v-model:selected-edges="selectedEdges" :nodes="nodes"
-    @dblclick="addNodeOnDoubleClick" :edges="edges" :layouts="data.layouts" :configs="configs">
+  <v-network-graph
+    v-model:selected-nodes="selectedNodes"
+    v-model:selected-edges="selectedEdges"
+    :nodes="nodes"
+    @dblclick="addNodeOnDoubleClick"
+    :edges="edges"
+    :layouts="data.layouts"
+    :configs="configs"
+  >
     <template #edge-label="{ edge, ...slotProps }">
-      <v-edge-label :text="nameofEdge(edge)" align="center" vertical-align="above" v-bind="slotProps" />
+      <v-edge-label
+        :text="nameofEdge(edge)"
+        align="center"
+        vertical-align="above"
+        v-bind="slotProps"
+      />
     </template>
   </v-network-graph>
 
@@ -44,24 +115,24 @@
         <tr v-for="(row, rowIndex) in adjacencyMatrix" :key="rowIndex">
           <td v-for="(value, colIndex) in row" :key="colIndex">
             <template v-if="rowIndex === 0 || colIndex === 0">
-          <th>{{ value }}</th>
-          </template>
-          <template v-else>
-            {{ value }}
-          </template>
+              <th>{{ value }}</th>
+            </template>
+            <template v-else>
+              {{ value }}
+            </template>
           </td>
         </tr>
       </table>
     </div>
   </div>
 </template>
-  
+
 <script setup>
 import { reactive, ref } from "vue";
+import { useRouter } from "vue-router"; // Importa el enrutador
 import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
-
 
 const nodes = reactive({ ...data.nodes });
 const edges = reactive({ ...data.edges });
@@ -101,7 +172,7 @@ const configs = reactive(
         color: (edge) => edge.color,
         dasharray: (edge) => (edge.dashed ? "4" : "0"),
       },
-      // estilo de la flecha de conexion 
+      // estilo de la flecha de conexion
       marker: {
         source: {
           type: "none",
@@ -130,6 +201,7 @@ const nextNodeIndex = ref(Object.keys(data.nodes).length + 1);
 const nextEdgeIndex = ref(Object.keys(data.edges).length + 1);
 const selectedNodes = ref([]);
 const selectedEdges = ref([]);
+const router = useRouter();
 
 function showMatrixModal() {
   isMatrixModalVisible.value = true;
@@ -143,6 +215,12 @@ function toggleSidebar() {
   showSidebar.value = !showSidebar.value;
   console.log(showSidebar.value);
 }
+
+const backToHomePage = () => {
+  if (router) {
+    router.push("/");
+  }
+};
 
 function addSkyBlueNode() {
   addNode({ size: 24, color: "lightskyblue", label: true });
@@ -166,13 +244,12 @@ function addNode(node, x, y) {
   nodes[nodeId] = { name, ...node };
   nextNodeIndex.value++;
 
-  if (typeof x !== 'undefined' && typeof y !== 'undefined') {
+  if (typeof x !== "undefined" && typeof y !== "undefined") {
     data.layouts.nodes[nodeId] = { x, y };
   }
 
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 }
-
 
 function removeNode() {
   for (const nodeId of selectedNodes.value) {
@@ -260,7 +337,6 @@ function addNodeOnDoubleClick(event) {
   addNode(newNode, event.clientX, event.clientY);
 }
 
-
 /* function createAdjacencyMatrix(nodesJSON, edgesJSON) {
    const nodes = nodesJSON;
    const edges = edgesJSON;
@@ -292,18 +368,16 @@ function addNodeOnDoubleClick(event) {
    return matrix;
 }*/
 
-
 function nameofEdge(edge) {
   const label = edge.label !== null ? edge.label : "";
   const cost = edge.cost !== null ? edge.cost : "";
-  const aux = label || cost ? `${label}${label && cost ? ": " : ""}${cost}` : " ";
+  const aux =
+    label || cost ? `${label}${label && cost ? ": " : ""}${cost}` : " ";
   return aux;
 }
-
 </script>
-  
-<style>
 
+<style scoped>
 body {
   margin: 0;
   height: 100%;
@@ -389,15 +463,15 @@ body {
   cursor: not-allowed;
 }
 
-
 #controlPanel .nodos .btn-control-panel,
 #controlPanel .vertices .btn-control-panel {
   font-size: 1rem;
   background: #fff;
-  color: #4A5568;
-  border: 0px solid #A0AEC0;
-  transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .2s ease;
-  box-shadow: 0 0 0 #BEE3F8;
+  color: #4a5568;
+  border: 0px solid #a0aec0;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.2s ease;
+  box-shadow: 0 0 0 #bee3f8;
   transform: translateY(0);
 }
 
@@ -425,9 +499,22 @@ body {
 }
 
 .btn-control-panel {
-  width: 100px;
-  max-width: 100px;
-  margin: 5px;
+  width: 100%;
+  height: 100%;
+  margin: 2%;
+  padding: 3%;
+  border-radius: 25px;
+  transition: ease-in 0.5s;
+  background-color: #ffdfd0;
+  color: #000;
+}
+
+.btn-control-panel:hover {
+  scale: 1.2;
+  transition: ease-in-out 0.5s;
+  margin: 5% 0;
+  background-color: #c63637;
+  color: #fffff2;
 }
 
 .modal {
@@ -446,10 +533,9 @@ body {
 
 .modal-content {
   background-color: #fff;
-  padding: 20px;
+  padding: 2.5%;
   border: 1px solid #888;
   width: 80%;
-  max-width: 600px;
   position: relative;
   text-align: center;
 }
@@ -486,19 +572,19 @@ body {
 }
 
 .sidebar {
-  width: 250px;
+  width: 25%;
   position: fixed;
   top: 0;
-  left: -260px;
+  left: -100%;
   height: calc(100vh - 20px);
   background-color: rgba(255, 255, 255, 0.5);
   overflow-x: hidden;
   transition: left 0.5s;
-  padding-top: 20px;
-  padding-left: 10px;
+  padding: 10% 7%;
   z-index: 1;
   backdrop-filter: blur(5px);
   border: 1px solid #ccc;
+  transition: ease-in-out 0.5s;
 }
 
 .show-sidebar {
@@ -542,4 +628,43 @@ body {
   align-items: center;
   margin: 2% 0;
 }
+@media screen and (max-width: 440px) {
+  .sidebar {
+    width: 60%;
+    padding: 20% 7%;
+  }
+  .modal-content {
+    padding: 2.5% 0;
+    width: 100%;
+    position: relative;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .close {
+    color: #888;
+    float: right;
+    font-size: 1.7rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .adjacency-matrix {
+    border-collapse: collapse;
+    width: 100%;
+    transform: scale(0.8);
+  }
+}
+
+/**Estilos del menú emergente */
+.menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 150px;
+  background-color: white;
+  border: 1px solid gray;
+}
+/**fin estilos menúe emergente */
 </style>
