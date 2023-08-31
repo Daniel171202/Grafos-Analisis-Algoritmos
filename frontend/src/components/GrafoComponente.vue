@@ -115,6 +115,9 @@
         </div>
       </div>
     </div>
+
+
+    
     <!--@dblclick="addNodeOnDoubleClick"  ES DENTRO DE V-NETWORK-->
     <v-network-graph
       v-model:selected-nodes="selectedNodes"
@@ -152,6 +155,36 @@
         </table>
       </div>
     </div>
+
+    <div class="modal2" v-if="isNodoModalVisible">
+      <div class="modal-content">
+        <span class="close" @click="hideNodoModal">&times;</span>
+        <h3>Nombre Nodo:</h3>
+        <label>Nombre:</label>
+         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+         <input type="text" v-model="nodes[actualNodeIndex].name" />
+        <button class="btn-control-panel" @click="hideNodoModal">Aceptar</button>
+       
+      </div>
+    </div>
+
+
+    <div class="modal3" v-if="isEdgeModalVisible">
+      <div class="modal-content">
+        <span class="close" @click="hideEdgeModal">&times;</span>
+        <h3>Nombre Conexion:</h3>
+        <label>Nombre:</label>
+         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+         <input type="text" v-model="edges[actualEdgeIndex].label" />
+          <br>
+         <label>Peso: </label>
+        <input type="number" v-model="edges[actualEdgeIndex].cost" />
+        <button class="btn-control-panel" @click="hideEdgeModal">Aceptar</button>
+       
+      </div>
+    </div>
+    
+
   </div>
 </template>
 
@@ -162,6 +195,12 @@ import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
 
+function obtenerIdNodo() {
+  const nodeId = `node${(nextNodeIndex.value)-1}`;
+  console.log(nodeId);
+  return nodeId
+
+}
 /**SCRIPTS MENU EMERGENTE*/
 
 /**const menuVisible = ref(false);
@@ -192,16 +231,27 @@ function toggleMenu(clickX, clickY) {
 const nodes = reactive({ ...data.nodes });
 const edges = reactive({ ...data.edges });
 
+
 var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
+const isNodoModalVisible = ref(false);
+const isEdgeModalVisible = ref(false);
+
 const showSidebar = ref(false);
 
 const configs = reactive(
   vNG.defineConfigs({
     view: {
       scalingObjects: true,
-      minZoomLevel: 2,
-      zoomEnabled: false,
+      minZoomLevel: 1,
+      zoomEnabled: true,
+      doubleClickZoomEnabled: false , // Whether to zoom with double click. default: true
+      mouseWheelZoomEnabled:  true ,
+      panEnabled: true,
+      autoPanAndZoomOnLoad: 'fit-content',
+      maxZoomLevel: 2,
+
+
     },
     node: {
       normal: {
@@ -251,7 +301,8 @@ const configs = reactive(
     },
   })
 );
-
+const actualNodeIndex = ref(0);
+const actualEdgeIndex = ref(0);
 const nextNodeIndex = ref(Object.keys(data.nodes).length + 1);
 const nextEdgeIndex = ref(Object.keys(data.edges).length + 1);
 const selectedNodes = ref([]);
@@ -259,12 +310,34 @@ const selectedEdges = ref([]);
 const router = useRouter();
 
 function showMatrixModal() {
+  adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   isMatrixModalVisible.value = true;
+
+
+
 }
 
 function hideMatrixModal() {
   isMatrixModalVisible.value = false;
 }
+
+
+function showNodoModal() {
+  isNodoModalVisible.value = true;
+}
+
+function hideNodoModal() {
+  isNodoModalVisible.value = false;
+}
+
+function showEdgeModal() {
+  isEdgeModalVisible.value = true;
+}
+
+function hideEdgeModal() {
+  isEdgeModalVisible.value = false;
+}
+
 
 function toggleSidebar() {
   showSidebar.value = !showSidebar.value;
@@ -293,10 +366,12 @@ function addBlackNode() {
   addNode({ size: 48, color: "black", label: false });
 }
 
+
 function addNode(node, x, y) {
   const nodeId = `node${nextNodeIndex.value}`;
   const name = `Node ${nextNodeIndex.value}`;
   nodes[nodeId] = { name, ...node };
+  actualNodeIndex.value = nodeId;
   nextNodeIndex.value++;
 
   if (typeof x !== "undefined" && typeof y !== "undefined") {
@@ -304,6 +379,7 @@ function addNode(node, x, y) {
   }
 
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+  showNodoModal();
 }
 
 function removeNode() {
@@ -335,15 +411,19 @@ function addEdge(edge) {
   const [source, target] = selectedNodes.value;
   const edgeId = `edge${nextEdgeIndex.value++}`;
   edges[edgeId] = { source, target, ...edge };
+  actualEdgeIndex.value = edgeId;
   console.log(edges);
-
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+  showEdgeModal();
+
 }
 
 function removeEdge() {
   for (const edgeId of selectedEdges.value) {
+    console.log(edgeId);
     delete edges[edgeId];
   }
+
 
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 }
@@ -581,6 +661,19 @@ body {
   z-index: 1;
   left: 0;
   top: 0;
+  width: 50%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+.modal2 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
@@ -588,7 +681,19 @@ body {
   align-items: center;
   display: flex;
 }
-
+.modal3 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
 .modal-content {
   background-color: #fff;
   padding: 2.5%;
