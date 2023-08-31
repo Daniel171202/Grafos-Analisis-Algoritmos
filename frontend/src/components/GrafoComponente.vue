@@ -116,7 +116,6 @@
       </div>
     </div>
 
-
     
     <!--@dblclick="addNodeOnDoubleClick"  ES DENTRO DE V-NETWORK-->
     <v-network-graph
@@ -195,12 +194,7 @@ import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
 
-function obtenerIdNodo() {
-  const nodeId = `node${(nextNodeIndex.value)-1}`;
-  console.log(nodeId);
-  return nodeId
 
-}
 /**SCRIPTS MENU EMERGENTE*/
 
 /**const menuVisible = ref(false);
