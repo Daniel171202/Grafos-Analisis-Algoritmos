@@ -473,8 +473,9 @@ body {
 .v-network-graph {
   padding: 0;
   margin: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 98vh;
+  
 }
 
 .demo-container {
@@ -490,6 +491,8 @@ body {
   border-radius: 5px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
+
+
 
 .control-group {
   margin-bottom: 10px;
@@ -635,7 +638,7 @@ body {
   background-color: rgba(255, 255, 255, 0.5);
   overflow-x: hidden;
   transition: left 0.5s;
-  padding: 10% 7%;
+  padding: 3% 6%;
   z-index: 1;
   backdrop-filter: blur(5px);
   border: 1px solid #ccc;
