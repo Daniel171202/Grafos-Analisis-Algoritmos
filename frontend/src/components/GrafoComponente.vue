@@ -655,7 +655,7 @@ body {
   z-index: 1;
   left: 0;
   top: 0;
-  width: 100%;
+  width: 50%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
   justify-content: center;
