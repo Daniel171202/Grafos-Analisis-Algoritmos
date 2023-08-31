@@ -1,138 +1,193 @@
 <template>
+  <!--@mousedown="handleClick"-->
   <div>
-    <button class="burger-button" @click="toggleSidebar">
-      <img
-        src="../assets/hamburger-menu-svgrepo-com.svg"
-        width="33"
-        height="33"
-      />
-    </button>
-    <div class="menu" v-if="menuVisible"></div>
+    <div>
+      <button class="burger-button" @click="toggleSidebar">
+        <img
+          src="../assets/hamburger-menu-svgrepo-com.svg"
+          width="33"
+          height="33"
+        />
+      </button>
+      <!--
+        FUNCIONALIDAD DE MOSTRAR EL MENU CON DESPUÉS DE DOBLECLICK
+        <div class="menu" v-if="menuVisible" :style="menuStyles" @dblclick.stop>
+        <label>Nodos:</label>
+        <div class="buttons">
+          <button class="btn-control-panel" @click="addSkyBlueNode">
+            Agregar Nodo Celeste
+          </button>
+          <button class="btn-control-panel" @click="addHotPinkNode">
+            Agregar Nodo Rosado
+          </button>
+          <button class="btn-control-panel" @click="addGrayNode">
+            Agregar Nodo Gris
+          </button>
+          <button class="btn-control-panel" @click="addBlackNode">
+            Agregar Nodo Negro
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="selectedNodes.length == 0"
+            @click="removeNode"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+      -->
 
-    <div class="sidebar" :class="{ 'show-sidebar': showSidebar }">
-      <!--      <h3>Menú</h3>
+      <div class="sidebar" :class="{ 'show-sidebar': showSidebar }">
+        <!--      <h3>Menú</h3>
 -->
-      <div></div>
-      <label>Volver: </label>
-      <div class="buttons">
-        <button class="btn-control-panel" @click="backToHomePage">
-          A La Página Principal
-        </button>
-      </div>
-      <label>Nodos:</label>
-      <div class="buttons">
-        <button class="btn-control-panel" @click="addSkyBlueNode">
-          Agregar Nodo Celeste
-        </button>
-        <button class="btn-control-panel" @click="addHotPinkNode">
-          Agregar Nodo Rosado
-        </button>
-        <button class="btn-control-panel" @click="addGrayNode">
-          Agregar Nodo Gris
-        </button>
-        <button class="btn-control-panel" @click="addBlackNode">
-          Agregar Nodo Negro
-        </button>
-        <button
-          class="btn-control-panel"
-          :disabled="selectedNodes.length == 0"
-          @click="removeNode"
-        >
-          Eliminar
-        </button>
-      </div>
-      <label>Vértices:</label>
-      <div class="buttons">
-        <button
-          class="btn-control-panel"
-          :disabled="!isEdgeAddable()"
-          @click="addSkyBlueEdge"
-        >
-          Conexión Celeste
-        </button>
-        <button
-          class="btn-control-panel"
-          :disabled="!isEdgeAddable()"
-          @click="addHotPinkEdge"
-        >
-          Conexión Rosado
-        </button>
-        <button
-          class="btn-control-panel"
-          :disabled="!isEdgeAddable()"
-          @click="addGrayEdge"
-        >
-          Conexión Gris
-        </button>
-        <button
-          class="btn-control-panel"
-          :disabled="!isEdgeAddable()"
-          @click="addBlackEdge"
-        >
-          Conexión Negro
-        </button>
-        <button
-          class="btn-control-panel"
-          :disabled="selectedEdges.length == 0"
-          @click="removeEdge"
-        >
-          Eliminar Vértice
-        </button>
-      </div>
-      <label>Extras:</label>
-      <div class="buttons">
-        <button @click="showMatrixModal" class="btn-control-panel">
-          Ver Matriz de Adyacencia
-        </button>
+        <div></div>
+        <label>Volver: </label>
+        <div class="buttons">
+          <button class="btn-control-panel" @click="backToHomePage">
+            A La Página Principal
+          </button>
+        </div>
+        <label>Nodos:</label>
+        <div class="buttons">
+          <button class="btn-control-panel" @click="addSkyBlueNode">
+            Agregar Nodo Celeste
+          </button>
+          <button class="btn-control-panel" @click="addHotPinkNode">
+            Agregar Nodo Rosado
+          </button>
+          <button class="btn-control-panel" @click="addGrayNode">
+            Agregar Nodo Gris
+          </button>
+          <button class="btn-control-panel" @click="addBlackNode">
+            Agregar Nodo Negro
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="selectedNodes.length == 0"
+            @click="removeNode"
+          >
+            Eliminar
+          </button>
+        </div>
+        <label>Vértices:</label>
+        <div class="buttons">
+          <button
+            class="btn-control-panel"
+            :disabled="!isEdgeAddable()"
+            @click="addSkyBlueEdge"
+          >
+            Conexión Celeste
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="!isEdgeAddable()"
+            @click="addHotPinkEdge"
+          >
+            Conexión Rosado
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="!isEdgeAddable()"
+            @click="addGrayEdge"
+          >
+            Conexión Gris
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="!isEdgeAddable()"
+            @click="addBlackEdge"
+          >
+            Conexión Negro
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="selectedEdges.length == 0"
+            @click="removeEdge"
+          >
+            Eliminar Vértice
+          </button>
+        </div>
+        <label>Extras:</label>
+        <div class="buttons">
+          <button @click="showMatrixModal" class="btn-control-panel">
+            Ver Matriz de Adyacencia
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+    <!--@dblclick="addNodeOnDoubleClick"  ES DENTRO DE V-NETWORK-->
+    <v-network-graph
+      v-model:selected-nodes="selectedNodes"
+      v-model:selected-edges="selectedEdges"
+      :nodes="nodes"
+      :edges="edges"
+      :layouts="data.layouts"
+      :configs="configs"
+    >
+      <template #edge-label="{ edge, ...slotProps }">
+        <v-edge-label
+          :text="nameofEdge(edge)"
+          align="center"
+          vertical-align="above"
+          v-bind="slotProps"
+        />
+      </template>
+    </v-network-graph>
 
-  <v-network-graph
-    v-model:selected-nodes="selectedNodes"
-    v-model:selected-edges="selectedEdges"
-    :nodes="nodes"
-    @dblclick="addNodeOnDoubleClick"
-    :edges="edges"
-    :layouts="data.layouts"
-    :configs="configs"
-  >
-    <template #edge-label="{ edge, ...slotProps }">
-      <v-edge-label
-        :text="nameofEdge(edge)"
-        align="center"
-        vertical-align="above"
-        v-bind="slotProps"
-      />
-    </template>
-  </v-network-graph>
-
-  <div class="modal" v-if="isMatrixModalVisible">
-    <div class="modal-content">
-      <span class="close" @click="hideMatrixModal">&times;</span>
-      <h3>Matriz de Adyacencia:</h3>
-      <table class="adjacency-matrix">
-        <tr v-for="(row, rowIndex) in adjacencyMatrix" :key="rowIndex">
-          <td v-for="(value, colIndex) in row" :key="colIndex">
-            <template v-if="rowIndex === 0 || colIndex === 0">
-              <th>{{ value }}</th>
-            </template>
-            <template v-else>
-              {{ value }}
-            </template>
-          </td>
-        </tr>
-      </table>
+    <div class="modal" v-if="isMatrixModalVisible">
+      <div class="modal-content">
+        <span class="close" @click="hideMatrixModal">&times;</span>
+        <h3>Matriz de Adyacencia:</h3>
+        <table class="adjacency-matrix">
+          <tr v-for="(row, rowIndex) in adjacencyMatrix" :key="rowIndex">
+            <td v-for="(value, colIndex) in row" :key="colIndex">
+              <template v-if="rowIndex === 0 || colIndex === 0">
+                <th>{{ value }}</th>
+              </template>
+              <template v-else>
+                {{ value }}
+              </template>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { reactive, ref } from "vue";
-import { useRouter } from "vue-router"; // Importa el enrutador
+import { useRouter } from "vue-router";
 import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
+
+/**SCRIPTS MENU EMERGENTE*/
+
+/**const menuVisible = ref(false);
+const menuStyles = ref({
+  display: "none",
+  position: "absolute",
+  top: "0",
+  left: "0",
+});
+function handleClick(event) {
+  if (!event.target.classList.contains("v-network-graph")) {
+    toggleMenu(event.clientX, event.clientY);
+  }
+}
+
+function toggleMenu(clickX, clickY) {
+  menuVisible.value = !menuVisible.value;
+  menuStyles.value = {
+    display: menuVisible.value ? "block" : "none",
+    position: "absolute",
+    top: `${clickY}px`,
+    left: `${clickX}px`,
+  };
+} */
+
+/**FIN SCRIPTS MENU EMERGENTE */
 
 const nodes = reactive({ ...data.nodes });
 const edges = reactive({ ...data.edges });
@@ -323,7 +378,7 @@ function createAdjacencyMatrix(nodes, edges) {
   return matrix;
 }
 
-function addNodeOnDoubleClick(event) {
+/**function addNodeOnDoubleClick(event) {
   const newNode = {
     size: 24,
     color: "lightskyblue",
@@ -335,7 +390,7 @@ function addNodeOnDoubleClick(event) {
   // get the x and y position of the first node
 
   addNode(newNode, event.clientX, event.clientY);
-}
+} */
 
 /* function createAdjacencyMatrix(nodesJSON, edgesJSON) {
    const nodes = nodesJSON;
