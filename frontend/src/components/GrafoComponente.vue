@@ -227,6 +227,8 @@ var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
 const isNodoModalVisible = ref(false);
 const isEdgeModalVisible = ref(false);
+let creatingEdge = false;
+let startNode = null;
 
 const showSidebar = ref(false);
 
@@ -363,7 +365,6 @@ function addNode(node, x, y) {
 
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   showNodoModal();
-  console.log(data.layouts.nodes);
 }
 
 function removeNode() {
@@ -409,12 +410,9 @@ function addNodeOnDoubleClick(event) {
   const rect = graphElement.getBoundingClientRect();
   const localX = (clickX * 0.92473) - 430;
   const localY = (clickY * 0.96124) - 620;
-  console.log("evento: ", event.clientX, event.clientY);
-  console.log("local: ",localX, localY);
-  console.log("rect: ", rect.left, rect.top);
   // get the x and y position of the first node
 
-  addNode({ name: "New node", size: 16, color: "gray",  }, localX, localY);
+  addNode({ name: "New node", size: 16, color: "lightskyblue",  }, localX, localY);
 }
 
 function removeEdge() {
@@ -432,29 +430,51 @@ function isEdgeAddable() {
 
 function createAdjacencyMatrix(nodes, edges) {
   const nodeKeys = Object.keys(nodes);
-  const matrix = Array.from({ length: nodeKeys.length + 1 }, () =>
-    Array.from({ length: nodeKeys.length + 1 }, () => 0)
+  const matrixSize = nodeKeys.length + 2; // Tamaño de la matriz
+  const matrix = Array.from({ length: matrixSize }, () =>
+    Array.from({ length: matrixSize }, () => 0)
   );
 
+  // Rellenar encabezados de fila y columna con nombres de nodos
   for (let i = 1; i <= nodeKeys.length; i++) {
-    matrix[0][i] = nodes[nodeKeys[i - 1]].name;
-    matrix[i][0] = nodes[nodeKeys[i - 1]].name;
+    const nodeName = nodes[nodeKeys[i - 1]].name;
+    matrix[0][i] = nodeName;
+    matrix[i][0] = nodeName;
   }
 
   matrix[0][0] = " ";
+  matrix[matrixSize - 1][0] = "Suma (columna)";
+  matrix[0][matrixSize - 1] = "Suma (fila)";
 
+  // Llenar la matriz con valores de aristas
   for (const edgeKey in edges) {
     const edge = edges[edgeKey];
     const sourceIndex = nodeKeys.indexOf(edge.source) + 1;
     const targetIndex = nodeKeys.indexOf(edge.target) + 1;
 
-    if (sourceIndex !== 0 && targetIndex !== 0) {
+    // Verificar si sourceIndex y targetIndex son válidos
+    if (sourceIndex >= 1 && targetIndex >= 1 && sourceIndex < matrixSize && targetIndex < matrixSize) {
       matrix[sourceIndex][targetIndex] = edge.cost || 1;
     }
   }
 
+  // Calcular las sumas por filas y columnas
+  for (let i = 1; i <= nodeKeys.length; i++) {
+    let rowSum = 0;
+    let colSum = 0;
+
+    for (let j = 1; j <= nodeKeys.length; j++) {
+      rowSum += matrix[i][j];
+      colSum += matrix[j][i];
+    }
+
+    matrix[i][matrixSize - 1] = rowSum;
+    matrix[matrixSize - 1][i] = colSum;
+  }
+
   return matrix;
 }
+
 
 /**function addNodeOnDoubleClick(event) {
   const newNode = {
