@@ -1,81 +1,245 @@
 <template>
+  <!--@mousedown="handleClick"-->
   <div>
-    <button class="burger-button" @click="toggleSidebar">
-      <img src="../assets/hamburger-menu-svgrepo-com.svg" width="33" height="33"> 
-    </button>
-    <div class="sidebar" :class="{'show-sidebar': showSidebar}">
-      <h3>Menú</h3>
-      <label>Nodos:</label>
-      <div class="buttons">
-        <button class="btn-control-panel" @click="addSkyBlueNode">Agregar Nodo Celeste</button>
-        <button class="btn-control-panel" @click="addHotPinkNode">Agregar Nodo Rosado</button>
-        <button class="btn-control-panel" @click="addGrayNode">Agregar Nodo Gris</button>
-        <button class="btn-control-panel" @click="addBlackNode">Agregar Nodo Negro</button>
-        <button class="btn-control-panel" :disabled="selectedNodes.length == 0" @click="removeNode">Eliminar</button>
+    <div>
+      <button class="burger-button" @click="toggleSidebar">
+        <img
+          src="../assets/hamburger-menu-svgrepo-com.svg"
+          width="33"
+          height="33"
+        />
+      </button>
+      <!--
+        FUNCIONALIDAD DE MOSTRAR EL MENU CON DESPUÉS DE DOBLECLICK
+        <div class="menu" v-if="menuVisible" :style="menuStyles" @dblclick.stop>
+        <label>Nodos:</label>
+        <div class="buttons">
+          <button class="btn-control-panel" @click="addSkyBlueNode">
+            Agregar Nodo Celeste
+          </button>
+          <button class="btn-control-panel" @click="addHotPinkNode">
+            Agregar Nodo Rosado
+          </button>
+          <button class="btn-control-panel" @click="addGrayNode">
+            Agregar Nodo Gris
+          </button>
+          <button class="btn-control-panel" @click="addBlackNode">
+            Agregar Nodo Negro
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="selectedNodes.length == 0"
+            @click="removeNode"
+          >
+            Eliminar
+          </button>
+        </div>
       </div>
-      <label>Vértices:</label>
-      <div class="buttons">
-        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addSkyBlueEdge">Conexión Celeste</button>
-        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addHotPinkEdge">Conexión Rosado</button>
-        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addGrayEdge">Conexión Gris</button>
-        <button class="btn-control-panel" :disabled="!isEdgeAddable()" @click="addBlackEdge">Conexión Negro</button>
-        <button class="btn-control-panel" :disabled="selectedEdges.length == 0" @click="removeEdge">Eliminar
-          Vértice</button>
-      </div>
-      <label>Extras:</label>
-      <div class="buttons">
-        <button @click="showMatrixModal" class="btn-control-panel">Ver Matriz de Adyacencia</button>
+      -->
+
+      <div class="sidebar" :class="{ 'show-sidebar': showSidebar }">
+        <!--      <h3>Menú</h3>
+-->
+        <div></div>
+        <label>Volver: </label>
+        <div class="buttons">
+          <button class="btn-control-panel" @click="backToHomePage">
+            A La Página Principal
+          </button>
+        </div>
+        <label>Nodos:</label>
+        <div class="buttons">
+          <button class="btn-control-panel" @click="addSkyBlueNode">
+            Agregar Nodo Celeste
+          </button>
+          <button class="btn-control-panel" @click="addHotPinkNode">
+            Agregar Nodo Rosado
+          </button>
+          <button class="btn-control-panel" @click="addGrayNode">
+            Agregar Nodo Gris
+          </button>
+          <button class="btn-control-panel" @click="addBlackNode">
+            Agregar Nodo Negro
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="selectedNodes.length == 0"
+            @click="removeNode"
+          >
+            Eliminar
+          </button>
+        </div>
+        <label>Vértices:</label>
+        <div class="buttons">
+          <button
+            class="btn-control-panel"
+            :disabled="!isEdgeAddable()"
+            @click="addSkyBlueEdge"
+          >
+            Conexión Celeste
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="!isEdgeAddable()"
+            @click="addHotPinkEdge"
+          >
+            Conexión Rosado
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="!isEdgeAddable()"
+            @click="addGrayEdge"
+          >
+            Conexión Gris
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="!isEdgeAddable()"
+            @click="addBlackEdge"
+          >
+            Conexión Negro
+          </button>
+          <button
+            class="btn-control-panel"
+            :disabled="selectedEdges.length == 0"
+            @click="removeEdge"
+          >
+            Eliminar Vértice
+          </button>
+        </div>
+        <label>Extras:</label>
+        <div class="buttons">
+          <button @click="showMatrixModal" class="btn-control-panel">
+            Ver Matriz de Adyacencia
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <v-network-graph v-model:selected-nodes="selectedNodes" v-model:selected-edges="selectedEdges" :nodes="nodes"
-    @dblclick="addNodeOnDoubleClick" :edges="edges" :layouts="data.layouts" :configs="configs">
-    <template #edge-label="{ edge, ...slotProps }">
-      <v-edge-label :text="nameofEdge(edge)" align="center" vertical-align="above" v-bind="slotProps" />
-    </template>
-  </v-network-graph>
+    <!--@dblclick="addNodeOnDoubleClick"  ES DENTRO DE V-NETWORK-->
+    <v-network-graph
+      v-model:selected-nodes="selectedNodes"
+      v-model:selected-edges="selectedEdges"
+      :nodes="nodes"
+      :edges="edges"
+      :layouts="data.layouts"
+      :configs="configs"
+    >
+      <template #edge-label="{ edge, ...slotProps }">
+        <v-edge-label
+          :text="nameofEdge(edge)"
+          align="center"
+          vertical-align="above"
+          v-bind="slotProps"
+        />
+      </template>
+    </v-network-graph>
 
-  <div class="modal" v-if="isMatrixModalVisible">
-    <div class="modal-content">
-      <span class="close" @click="hideMatrixModal">&times;</span>
-      <h3>Matriz de Adyacencia:</h3>
-      <table class="adjacency-matrix">
-        <tr v-for="(row, rowIndex) in adjacencyMatrix" :key="rowIndex">
-          <td v-for="(value, colIndex) in row" :key="colIndex">
-            <template v-if="rowIndex === 0 || colIndex === 0">
-          <th>{{ value }}</th>
-          </template>
-          <template v-else>
-            {{ value }}
-          </template>
-          </td>
-        </tr>
-      </table>
+    <div class="modal" v-if="isMatrixModalVisible">
+      <div class="modal-content">
+        <span class="close" @click="hideMatrixModal">&times;</span>
+        <h3>Matriz de Adyacencia:</h3>
+        <table class="adjacency-matrix">
+          <tr v-for="(row, rowIndex) in adjacencyMatrix" :key="rowIndex">
+            <td v-for="(value, colIndex) in row" :key="colIndex">
+              <template v-if="rowIndex === 0 || colIndex === 0">
+                <th>{{ value }}</th>
+              </template>
+              <template v-else>
+                {{ value }}
+              </template>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal2" v-if="isNodoModalVisible">
+      <div class="modal-content">
+        <span class="close" @click="hideNodoModal">&times;</span>
+        <h3>Nombre Nodo:</h3>
+        <label>Nombre:</label>
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <input type="text" v-model="nodes[actualNodeIndex].name" />
+        <button class="btn-control-panel" @click="hideNodoModal">
+          Aceptar
+        </button>
+      </div>
+    </div>
+
+    <div class="modal3" v-if="isEdgeModalVisible">
+      <div class="modal-content">
+        <span class="close" @click="hideEdgeModal">&times;</span>
+        <h3>Nombre Conexión:</h3>
+        <label>Nombre:</label>
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <input type="text" v-model="edges[actualEdgeIndex].label" />
+        <br />
+        <label>Peso: </label>
+        <input type="number" v-model="edges[actualEdgeIndex].cost" />
+        <button class="btn-control-panel" @click="hideEdgeModal">
+          Aceptar
+        </button>
+      </div>
     </div>
   </div>
 </template>
-  
+
 <script setup>
 import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
 import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
 
+/**SCRIPTS MENU EMERGENTE*/
+
+/**const menuVisible = ref(false);
+const menuStyles = ref({
+  display: "none",
+  position: "absolute",
+  top: "0",
+  left: "0",
+});
+function handleClick(event) {
+  if (!event.target.classList.contains("v-network-graph")) {
+    toggleMenu(event.clientX, event.clientY);
+  }
+}
+
+function toggleMenu(clickX, clickY) {
+  menuVisible.value = !menuVisible.value;
+  menuStyles.value = {
+    display: menuVisible.value ? "block" : "none",
+    position: "absolute",
+    top: `${clickY}px`,
+    left: `${clickX}px`,
+  };
+} */
+
+/**FIN SCRIPTS MENU EMERGENTE */
 
 const nodes = reactive({ ...data.nodes });
 const edges = reactive({ ...data.edges });
 
 var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
+const isNodoModalVisible = ref(false);
+const isEdgeModalVisible = ref(false);
+
 const showSidebar = ref(false);
 
 const configs = reactive(
   vNG.defineConfigs({
     view: {
       scalingObjects: true,
-      minZoomLevel: 2,
-      zoomEnabled: false,
+      minZoomLevel: 1,
+      zoomEnabled: true,
+      doubleClickZoomEnabled: false, // Whether to zoom with double click. default: true
+      mouseWheelZoomEnabled: true,
+      panEnabled: true,
+      autoPanAndZoomOnLoad: "fit-content",
+      maxZoomLevel: 2,
     },
     node: {
       normal: {
@@ -101,7 +265,7 @@ const configs = reactive(
         color: (edge) => edge.color,
         dasharray: (edge) => (edge.dashed ? "4" : "0"),
       },
-      // estilo de la flecha de conexion 
+      // estilo de la flecha de conexion
       marker: {
         source: {
           type: "none",
@@ -125,13 +289,16 @@ const configs = reactive(
     },
   })
 );
-
+const actualNodeIndex = ref(0);
+const actualEdgeIndex = ref(0);
 const nextNodeIndex = ref(Object.keys(data.nodes).length + 1);
 const nextEdgeIndex = ref(Object.keys(data.edges).length + 1);
 const selectedNodes = ref([]);
 const selectedEdges = ref([]);
+const router = useRouter();
 
 function showMatrixModal() {
+  adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   isMatrixModalVisible.value = true;
 }
 
@@ -139,10 +306,32 @@ function hideMatrixModal() {
   isMatrixModalVisible.value = false;
 }
 
+function showNodoModal() {
+  isNodoModalVisible.value = true;
+}
+
+function hideNodoModal() {
+  isNodoModalVisible.value = false;
+}
+
+function showEdgeModal() {
+  isEdgeModalVisible.value = true;
+}
+
+function hideEdgeModal() {
+  isEdgeModalVisible.value = false;
+}
+
 function toggleSidebar() {
   showSidebar.value = !showSidebar.value;
   console.log(showSidebar.value);
 }
+
+const backToHomePage = () => {
+  if (router) {
+    router.push("/");
+  }
+};
 
 function addSkyBlueNode() {
   addNode({ size: 24, color: "lightskyblue", label: true });
@@ -164,15 +353,16 @@ function addNode(node, x, y) {
   const nodeId = `node${nextNodeIndex.value}`;
   const name = `Node ${nextNodeIndex.value}`;
   nodes[nodeId] = { name, ...node };
+  actualNodeIndex.value = nodeId;
   nextNodeIndex.value++;
 
-  if (typeof x !== 'undefined' && typeof y !== 'undefined') {
+  if (typeof x !== "undefined" && typeof y !== "undefined") {
     data.layouts.nodes[nodeId] = { x, y };
   }
 
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+  showNodoModal();
 }
-
 
 function removeNode() {
   for (const nodeId of selectedNodes.value) {
@@ -203,13 +393,15 @@ function addEdge(edge) {
   const [source, target] = selectedNodes.value;
   const edgeId = `edge${nextEdgeIndex.value++}`;
   edges[edgeId] = { source, target, ...edge };
+  actualEdgeIndex.value = edgeId;
   console.log(edges);
-
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+  showEdgeModal();
 }
 
 function removeEdge() {
   for (const edgeId of selectedEdges.value) {
+    console.log(edgeId);
     delete edges[edgeId];
   }
 
@@ -246,7 +438,7 @@ function createAdjacencyMatrix(nodes, edges) {
   return matrix;
 }
 
-function addNodeOnDoubleClick(event) {
+/**function addNodeOnDoubleClick(event) {
   const newNode = {
     size: 24,
     color: "lightskyblue",
@@ -258,8 +450,7 @@ function addNodeOnDoubleClick(event) {
   // get the x and y position of the first node
 
   addNode(newNode, event.clientX, event.clientY);
-}
-
+} */
 
 /* function createAdjacencyMatrix(nodesJSON, edgesJSON) {
    const nodes = nodesJSON;
@@ -292,18 +483,16 @@ function addNodeOnDoubleClick(event) {
    return matrix;
 }*/
 
-
 function nameofEdge(edge) {
   const label = edge.label !== null ? edge.label : "";
   const cost = edge.cost !== null ? edge.cost : "";
-  const aux = label || cost ? `${label}${label && cost ? ": " : ""}${cost}` : " ";
+  const aux =
+    label || cost ? `${label}${label && cost ? ": " : ""}${cost}` : " ";
   return aux;
 }
-
 </script>
-  
-<style>
 
+<style scoped>
 body {
   margin: 0;
   height: 100%;
@@ -344,8 +533,8 @@ body {
 .v-network-graph {
   padding: 0;
   margin: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 98vh;
 }
 
 .demo-container {
@@ -389,15 +578,15 @@ body {
   cursor: not-allowed;
 }
 
-
 #controlPanel .nodos .btn-control-panel,
 #controlPanel .vertices .btn-control-panel {
   font-size: 1rem;
   background: #fff;
-  color: #4A5568;
-  border: 0px solid #A0AEC0;
-  transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .2s ease;
-  box-shadow: 0 0 0 #BEE3F8;
+  color: #4a5568;
+  border: 0px solid #a0aec0;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.2s ease;
+  box-shadow: 0 0 0 #bee3f8;
   transform: translateY(0);
 }
 
@@ -425,9 +614,35 @@ body {
 }
 
 .btn-control-panel {
-  width: 100px;
-  max-width: 100px;
-  margin: 5px;
+  width: 100%;
+  height: 50%;
+  margin: 2%;
+  padding: 3%;
+  border-radius: 25px;
+  transition: ease-in 0.5s;
+  background-color: #ffdfd0;
+  color: #000;
+}
+
+.modal .btn-control-panel,
+.modal2 .btn-control-panel,
+.modal3 .btn-control-panel {
+  width: 50%;
+  height: auto;
+  margin: 2%;
+  padding: 3%;
+  border-radius: 25px;
+  transition: ease-in 0.5s;
+  background-color: #ffdfd0;
+  color: #000;
+}
+
+.btn-control-panel:hover {
+  scale: 1.2;
+  transition: ease-in-out 0.5s;
+  margin: 5% 0;
+  background-color: #c63637;
+  color: #fffff2;
 }
 
 .modal {
@@ -443,15 +658,73 @@ body {
   align-items: center;
   display: flex;
 }
-
+.modal2 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+.modal3 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
 .modal-content {
   background-color: #fff;
-  padding: 20px;
+  padding: 2.5%;
   border: 1px solid #888;
-  width: 80%;
-  max-width: 600px;
+  width: 50%;
+  height: 50%;
+  border-radius: 25px;
   position: relative;
   text-align: center;
+}
+
+.modal2 .modal-content,
+.modal3 .modal-content {
+  /**  background-color: #fff;
+ */
+  padding: 2.5%;
+  border: 1px solid #888;
+  width: 50%;
+  height: 25%;
+  border-radius: 25px;
+  position: relative;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: linear-gradient(90deg, #e3ffe7 0%, #d9e7ff 100%);
+}
+
+.modal2 .modal-content h3,
+.modal3 .modal-content h3 {
+  margin-top: -2%;
+  font-size: 2.2rem;
+  color: #c63637;
+}
+
+.modal2 .modal-content input,
+.modal3 .modal-content input {
+  height: auto;
+  width: 50%;
+  font-size: 1rem;
 }
 
 .close {
@@ -486,19 +759,19 @@ body {
 }
 
 .sidebar {
-  width: 250px;
+  width: 25%;
   position: fixed;
   top: 0;
-  left: -260px;
+  left: -100%;
   height: calc(100vh - 20px);
   background-color: rgba(255, 255, 255, 0.5);
   overflow-x: hidden;
   transition: left 0.5s;
-  padding-top: 20px;
-  padding-left: 10px;
+  padding: 3% 6%;
   z-index: 1;
   backdrop-filter: blur(5px);
   border: 1px solid #ccc;
+  transition: ease-in-out 0.5s;
 }
 
 .show-sidebar {
@@ -542,4 +815,65 @@ body {
   align-items: center;
   margin: 2% 0;
 }
+@media screen and (max-width: 440px) {
+  .sidebar {
+    width: 60%;
+    padding: 20% 7%;
+    transform: scale(0.9);
+  }
+  .modal-content {
+    padding: 2.5% 0;
+    width: 100%;
+    position: relative;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .close {
+    color: #888;
+    float: right;
+    font-size: 1.7rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .adjacency-matrix {
+    border-collapse: collapse;
+    width: 100%;
+    transform: scale(0.8);
+  }
+  .modal2 .modal-content,
+  .modal3 .modal-content {
+    /**  background-color: #fff;
+ */
+    width: 90%;
+    height: 50%;
+  }
+
+  .modal2 .modal-content h3,
+  .modal3 .modal-content h3 {
+    font-size: 1.5rem;
+    color: #c63637;
+  }
+
+  .modal2 .modal-content input,
+  .modal3 .modal-content input {
+    margin-top: 0%;
+    height: 7%;
+    width: 75%;
+    font-size: 0.7rem;
+  }
+}
+
+/**Estilos del menú emergente */
+.menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 150px;
+  background-color: white;
+  border: 1px solid gray;
+}
+/**fin estilos menúe emergente */
 </style>
