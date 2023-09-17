@@ -124,6 +124,7 @@
       :edges="edges"
       :layouts="data.layouts"
       :configs="configs"
+      @dblclick="addNodeOnDoubleClick"
     >
       <template #edge-label="{ edge, ...slotProps }">
         <v-edge-label
@@ -362,6 +363,7 @@ function addNode(node, x, y) {
 
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   showNodoModal();
+  console.log(data.layouts.nodes);
 }
 
 function removeNode() {
@@ -397,6 +399,22 @@ function addEdge(edge) {
   console.log(edges);
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   showEdgeModal();
+}
+
+function addNodeOnDoubleClick(event) {
+  const clickX = event.clientX;
+  const clickY = event.clientY;
+
+  const graphElement = document.querySelector(".v-network-graph");
+  const rect = graphElement.getBoundingClientRect();
+  const localX = (clickX * 0.92473) - 430;
+  const localY = (clickY * 0.96124) - 620;
+  console.log("evento: ", event.clientX, event.clientY);
+  console.log("local: ",localX, localY);
+  console.log("rect: ", rect.left, rect.top);
+  // get the x and y position of the first node
+
+  addNode({ name: "New node", size: 16, color: "gray",  }, localX, localY);
 }
 
 function removeEdge() {
