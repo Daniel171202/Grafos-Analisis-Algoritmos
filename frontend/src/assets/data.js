@@ -1,6 +1,6 @@
 import { reactive } from "vue";
 
-const nodes = reactive({
+/*const nodes = reactive({
   node1: { name: "Node 1", size: 16, color: "gray" },
   node2: { name: "Node 2", size: 32, color: "hotpink", label: true },
   node3: { name: "Node 3", size: 24, color: "lightskyblue", label: true },
@@ -26,8 +26,11 @@ const layouts = {
     node4: { x: 240, y: 80 },
     node5: { x: 320, y: 0 },
   },
-};
+};*/
 
+const nodes = reactive({});
+const edges = reactive({});
+const layouts = {nodes: {}};
 export default {
   nodes,
   edges,
