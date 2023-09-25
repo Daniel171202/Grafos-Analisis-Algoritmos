@@ -119,7 +119,9 @@
             Seleccionar Grafo
           </button>
 
-          <button class="btn-control-panel">Guardar Grafo</button>
+          <button @click="showSaveModal" class="btn-control-panel">
+            Guardar Grafo
+          </button>
         </div>
       </div>
     </div>
@@ -209,6 +211,21 @@
         </button>
       </div>
     </div>
+
+    <div class="modal5" v-if="isSaveVisible">
+      <div class="modal-content">
+        <span class="close" @click="hideSaveModal">&times;</span>
+        <h3>Elegir Grafo</h3>
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <label>Nombre grafo:</label>
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <input type="text" />
+        <br />
+        <button class="btn-control-panel" @click="hideSaveModal">
+          Guardar Grafo
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -254,6 +271,7 @@ const isMatrixModalVisible = ref(false);
 const isNodoModalVisible = ref(false);
 const isEdgeModalVisible = ref(false);
 const isSelectionVisible = ref(false);
+const isSaveVisible = ref(false);
 let creatingEdge = false;
 let startNode = null;
 
@@ -358,6 +376,14 @@ function showSelectionModal() {
 
 function hideSelectionModal() {
   isSelectionVisible.value = false;
+}
+
+function showSaveModal() {
+  isSaveVisible.value = true;
+}
+
+function hideSaveModal() {
+  isSaveVisible.value = false;
 }
 
 function toggleSidebar() {
@@ -727,7 +753,8 @@ body {
 .modal .btn-control-panel,
 .modal2 .btn-control-panel,
 .modal3 .btn-control-panel,
-.modal4 .btn-control-panel {
+.modal4 .btn-control-panel,
+.modal5 .btn-control-panel {
   width: 50%;
   height: auto;
   margin: 2%;
@@ -798,6 +825,20 @@ body {
   align-items: center;
   display: flex;
 }
+
+.modal5 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
 .modal-content {
   background-color: #fff;
   padding: 2.5%;
@@ -811,7 +852,8 @@ body {
 
 .modal2 .modal-content,
 .modal3 .modal-content,
-.modal4 .modal-content {
+.modal4 .modal-content,
+.modal5 .modal-content {
   /**  background-color: #fff;
  */
   padding: 2.5%;
@@ -843,7 +885,8 @@ body {
 
 .modal2 .modal-content h3,
 .modal3 .modal-content h3,
-.modal4 .modal-content h3 {
+.modal4 .modal-content h3,
+.modal5 .modal-content h3 {
   margin-top: -2%;
   font-size: 2.2rem;
   color: #c63637;
@@ -851,7 +894,8 @@ body {
 
 .modal2 .modal-content input,
 .modal3 .modal-content input,
-.modal4 .modal-content input {
+.modal4 .modal-content input,
+.modal5 .modal-content input {
   height: auto;
   width: 50%;
   font-size: 1rem;
@@ -974,7 +1018,8 @@ body {
   }
   .modal2 .modal-content,
   .modal3 .modal-content,
-  .modal4 .modal-content {
+  .modal4 .modal-content,
+  .modal5 .modal-content {
     /**  background-color: #fff;
  */
     width: 90%;
@@ -983,14 +1028,16 @@ body {
 
   .modal2 .modal-content h3,
   .modal3 .modal-content h3,
-  .modal4 .modal-content h3 {
+  .modal4 .modal-content h3,
+  .modal5 .modal-content h3 {
     font-size: 1.5rem;
     color: #c63637;
   }
 
   .modal2 .modal-content input,
   .modal3 .modal-content input,
-  .modal4 .modal-content input {
+  .modal4 .modal-content input,
+  .modal5 .modal-content input {
     margin-top: 0%;
     height: 7%;
     width: 75%;
