@@ -71,7 +71,7 @@
         </div>
         <label>Vértices:</label>
         <div class="buttons">
-          <button
+          <!--<button
             class="btn-control-panel"
             :disabled="!isEdgeAddable()"
             @click="addSkyBlueEdge"
@@ -91,7 +91,7 @@
             @click="addGrayEdge"
           >
             Conexión Gris
-          </button>
+          </button>-->
           <button
             class="btn-control-panel"
             :disabled="!isEdgeAddable()"
