@@ -52,7 +52,7 @@
           <button class="btn-control-panel" @click="addSkyBlueNode">
             Agregar Nodo Celeste
           </button>
-          <button class="btn-control-panel" @click="addHotPinkNode">
+          <!--<button class="btn-control-panel" @click="addHotPinkNode">
             Agregar Nodo Rosado
           </button>
           <button class="btn-control-panel" @click="addGrayNode">
@@ -60,13 +60,13 @@
           </button>
           <button class="btn-control-panel" @click="addBlackNode">
             Agregar Nodo Negro
-          </button>
+          </button>-->
           <button
             class="btn-control-panel"
             :disabled="selectedNodes.length == 0"
             @click="removeNode"
           >
-            Eliminar
+            Eliminar Nodo
           </button>
         </div>
         <label>Vértices:</label>
@@ -98,6 +98,9 @@
             @click="addBlackEdge"
           >
             Conexión Negro
+          </button>
+          <button class="btn-control-panel" @click="addLoopEdge">
+            Conexión Loop
           </button>
           <button
             class="btn-control-panel"
@@ -337,11 +340,11 @@ const backToHomePage = () => {
 };
 
 function addSkyBlueNode() {
-  addNode({ size: 24, color: "lightskyblue", label: true });
+  addNode({ size: 16, color: "lightskyblue", label: true });
 }
 
 function addHotPinkNode() {
-  addNode({ size: 32, color: "hotpink", label: true });
+  addNode({ size: 16, color: "hotpink", label: true });
 }
 
 function addGrayNode() {
@@ -349,7 +352,7 @@ function addGrayNode() {
 }
 
 function addBlackNode() {
-  addNode({ size: 48, color: "black", label: false });
+  addNode({ size: 16, color: "black", label: false });
 }
 
 function addNode(node, x, y) {
@@ -391,8 +394,27 @@ function addBlackEdge() {
   addEdge({ width: 1, color: "black" });
 }
 
+/**función loop */
+function addLoopEdge() {
+  if (selectedNodes.value.length === 1) {
+    const nodeId = selectedNodes.value[0];
+    console.error("Seleccionado solo un nodo, acá bien.");
+    addEdge({ source: nodeId, target: nodeId, width: 1, color: "black" });
+  } else {
+    // Muestra un mensaje de error o realiza alguna otra acción si no se cumple la condición.
+    console.error("Para agregar un bucle, selecciona exactamente un nodo.");
+  }
+}
+/**función loop */
+
 function addEdge(edge) {
-  if (selectedNodes.value.length !== 2) return;
+  if (selectedNodes.value.length !== 2 && selectedNodes.value.length !== 1) {
+    // Si no hay exactamente dos nodos seleccionados, muestra un mensaje de error o realiza alguna otra acción de manejo de errores.
+    console.error(
+      "Selecciona exactamente dos nodos o un nodo para agregar un bucle."
+    );
+    return;
+  }
   const [source, target] = selectedNodes.value;
   const edgeId = `edge${nextEdgeIndex.value++}`;
   edges[edgeId] = { source, target, ...edge };
@@ -408,11 +430,15 @@ function addNodeOnDoubleClick(event) {
 
   const graphElement = document.querySelector(".v-network-graph");
   const rect = graphElement.getBoundingClientRect();
-  const localX = (clickX * 0.92473) - 430;
-  const localY = (clickY * 0.96124) - 620;
+  const localX = clickX * 0.92473 - 430;
+  const localY = clickY * 0.96124 - 620;
   // get the x and y position of the first node
 
-  addNode({ name: "New node", size: 16, color: "lightskyblue",  }, localX, localY);
+  addNode(
+    { name: "New node", size: 16, color: "lightskyblue" },
+    localX,
+    localY
+  );
 }
 
 function removeEdge() {
@@ -453,7 +479,12 @@ function createAdjacencyMatrix(nodes, edges) {
     const targetIndex = nodeKeys.indexOf(edge.target) + 1;
 
     // Verificar si sourceIndex y targetIndex son válidos
-    if (sourceIndex >= 1 && targetIndex >= 1 && sourceIndex < matrixSize && targetIndex < matrixSize) {
+    if (
+      sourceIndex >= 1 &&
+      targetIndex >= 1 &&
+      sourceIndex < matrixSize &&
+      targetIndex < matrixSize
+    ) {
       matrix[sourceIndex][targetIndex] = edge.cost || 1;
     }
   }
@@ -474,7 +505,6 @@ function createAdjacencyMatrix(nodes, edges) {
 
   return matrix;
 }
-
 
 /**function addNodeOnDoubleClick(event) {
   const newNode = {
