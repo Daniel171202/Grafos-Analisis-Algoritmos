@@ -115,8 +115,8 @@
           <button @click="showMatrixModal" class="btn-control-panel">
             Ver Matriz de Adyacencia
           </button>
-          <button @click="showSelectionModal" class="btn-control-panel">
-            Seleccionar Grafo
+          <button @click="getGrafosAndShowSelectionModal" class="btn-control-panel">
+            Seleccionar Grafo 
           </button>
 
           <button @click="showSaveModal" class="btn-control-panel">
@@ -196,17 +196,16 @@
 
     <div class="modal4" v-if="isSelectionVisible">
       <div class="modal-content">
-        <span class="close" @click="hideSelectionModal">&times;</span>
+        <span class="close" @click="getGrafoAndHideSelectionModal">&times;</span>
         <h3>Elegir Grafo</h3>
         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
         <select v-model="selectedGraph">
-          <option value="opcion1">Opción 1</option>
-          <option value="opcion2">Opción 2</option>
-          <option value="opcion3">Opción 3</option>
+          <option value="" disabled selected>Selecciona un grafo</option>
+          <option v-for="graph in graphOptions" :key="graph.idGrafo" :value="graph.idGrafo">{{ graph.nombre }}</option>
           <!-- Agrega más opciones según sea necesario -->
         </select>
         <br />
-        <button class="btn-control-panel" @click="hideSelectionModal">
+        <button class="btn-control-panel" @click="getGrafoAndHideSelectionModal(selectedGraph)">
           Aceptar
         </button>
       </div>
@@ -214,14 +213,14 @@
 
     <div class="modal5" v-if="isSaveVisible">
       <div class="modal-content">
-        <span class="close" @click="hideSaveModal">&times;</span>
+        <span class="close" @click="saveAndHideSaveModal">&times;</span>
         <h3>Elegir Grafo</h3>
         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
         <label>Nombre grafo:</label>
         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
-        <input type="text" />
+        <input type="text" id="nombre_grafo"/>
         <br />
-        <button class="btn-control-panel" @click="hideSaveModal">
+        <button class="btn-control-panel" @click="saveAndHideSaveModal">
           Guardar Grafo
         </button>
       </div>
@@ -235,6 +234,7 @@ import { useRouter } from "vue-router";
 import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
+import axios from 'axios';
 
 /**SCRIPTS MENU EMERGENTE*/
 
@@ -263,8 +263,8 @@ function toggleMenu(clickX, clickY) {
 
 /**FIN SCRIPTS MENU EMERGENTE */
 
-const nodes = reactive({ ...data.nodes });
-const edges = reactive({ ...data.edges });
+let nodes = reactive({ ...data.nodes });
+let edges = reactive({ ...data.edges });
 
 var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
@@ -274,6 +274,8 @@ const isSelectionVisible = ref(false);
 const isSaveVisible = ref(false);
 let creatingEdge = false;
 let startNode = null;
+
+let graphOptions = [];
 
 const showSidebar = ref(false);
 
@@ -370,11 +372,43 @@ function hideEdgeModal() {
   isEdgeModalVisible.value = false;
 }
 
-function showSelectionModal() {
+async function getGrafosAndShowSelectionModal() {
+  //TODO: Agregar el id del usuario que está logueado
+  graphOptions = await axios.get('http://localhost:8080/grafos/1')
+    .then(response => {
+      return response.data;
+    }).catch(error => {
+      console.log(error);
+    }
+  );
+  console.log(graphOptions);
   isSelectionVisible.value = true;
 }
 
-function hideSelectionModal() {
+function getGrafoAndHideSelectionModal(selectedGraph) {
+  //TODO: Se requiere un endpount para reotornar un solo grafo
+  axios.get('http://localhost:8080/grafos/1')
+    .then(response => {
+      console.log(response);
+      let grafos = response.data;
+      let grafoSeleccionado = grafos.find(grafo => grafo.idGrafo == selectedGraph);
+
+      if(grafoSeleccionado){
+        nodes = grafoSeleccionado.nodes;
+        edges = grafoSeleccionado.edges;
+        data.layouts = grafoSeleccionado.layouts;
+        console.log(nodes);
+        console.log(edges);
+        console.log(data.layouts);
+        adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+      }else{
+        console.log("No se encontró el grafo");
+      }
+      
+    }).catch(error => {
+      console.log(error);
+    }
+  );
   isSelectionVisible.value = false;
 }
 
@@ -382,7 +416,27 @@ function showSaveModal() {
   isSaveVisible.value = true;
 }
 
-function hideSaveModal() {
+function saveAndHideSaveModal() {
+  console.log(nodes);
+  console.log(edges);
+  console.log(data.layouts);
+  let grafo = {
+    nombre: document.getElementById("nombre_grafo").value,
+    nodes: nodes,
+    edges: edges,
+    layouts: data.layouts,
+    //TODO: Agregar el id del usuario que está logueado 
+    Usuarios_idUsuario: 1,
+  };	
+
+  axios.post('http://localhost:8080/grafos', grafo)
+    .then(response => {
+      console.log(response);
+    }).catch(error => {
+      console.log(error);
+    }
+  );
+
   isSaveVisible.value = false;
 }
 
