@@ -1,3 +1,4 @@
+
 <template>
   <!--@mousedown="handleClick"-->
   <div>
@@ -122,6 +123,10 @@
           <button @click="showSaveModal" class="btn-control-panel">
             Guardar Grafo
           </button>
+
+          <button @click="showUpdateModal" class="btn-control-panel">
+            Actualizar Grafo
+          </button>
         </div>
       </div>
     </div>
@@ -214,7 +219,7 @@
     <div class="modal5" v-if="isSaveVisible">
       <div class="modal-content">
         <span class="close" @click="saveAndHideSaveModal">&times;</span>
-        <h3>Elegir Grafo</h3>
+        <h3>Guardar Grafo</h3>
         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
         <label>Nombre grafo:</label>
         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
@@ -226,6 +231,24 @@
       </div>
     </div>
   </div>
+
+  <div class="modal6" v-if="isUpdateVisible">
+      <div class="modal-content">
+        <span class="close" @click="isUpdateVisible=false">&times;</span>
+        <h3>Elegir Grafo</h3>
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <select v-model="selectedGraph">
+          <option value="" disabled selected>Selecciona un grafo</option>
+          <option v-for="graph in graphOptions" :key="graph.idGrafo" :value="graph.idGrafo">{{ graph.nombre }}</option>
+          <!-- Agrega más opciones según sea necesario -->
+        </select>
+        <br />
+        <button class="btn-control-panel" @click="updateGrafoAndHideSelectionModal(selectedGraph)">
+          Aceptar
+        </button>
+      </div>
+    </div>
+
 </template>
 
 <script setup>
@@ -272,6 +295,7 @@ const isNodoModalVisible = ref(false);
 const isEdgeModalVisible = ref(false);
 const isSelectionVisible = ref(false);
 const isSaveVisible = ref(false);
+const isUpdateVisible = ref(false);
 let creatingEdge = false;
 let startNode = null;
 
@@ -374,7 +398,8 @@ function hideEdgeModal() {
 
 async function getGrafosAndShowSelectionModal() {
   //TODO: Agregar el id del usuario que está logueado
-  graphOptions = await axios.get('http://localhost:8080/grafos/1')
+  
+  graphOptions = await axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
     .then(response => {
       return response.data;
     }).catch(error => {
@@ -387,7 +412,7 @@ async function getGrafosAndShowSelectionModal() {
 
 function getGrafoAndHideSelectionModal(selectedGraph) {
   //TODO: Se requiere un endpount para reotornar un solo grafo
-  axios.get('http://localhost:8080/grafos/1')
+  axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
     .then(response => {
       console.log(response);
       let grafos = response.data;
@@ -401,6 +426,7 @@ function getGrafoAndHideSelectionModal(selectedGraph) {
         console.log(edges);
         console.log(data.layouts);
         adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+        toggleSidebar();
       }else{
         console.log("No se encontró el grafo");
       }
@@ -412,8 +438,59 @@ function getGrafoAndHideSelectionModal(selectedGraph) {
   isSelectionVisible.value = false;
 }
 
+async function getGrafosAndShowUpdateModal() {
+  //TODO: Agregar el id del usuario que está logueado
+  graphOptions = await axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
+    .then(response => {
+      return response.data;
+    }).catch(error => {
+      console.log(error);
+    }
+  );
+  console.log(graphOptions);
+  isUpdateVisible.value = true;
+}
+function updateGrafoAndHideSelectionModal(selectedGraph) {
+
+    console.log(nodes);
+    console.log(edges);
+    console.log(data.layouts);
+    console.log(selectedGraph);
+    // locate the name of the graph that coincides with the id of the selected graph
+    var nameSelectedGraph = "";
+    graphOptions.forEach(graph => {
+      if(graph.idGrafo == selectedGraph){
+        nameSelectedGraph = graph.nombre;
+      }
+    });
+    let grafo = {
+      nombre: nameSelectedGraph,
+      nodes: nodes,
+      edges: edges,
+      layouts: data.layouts,
+      //TODO: Agregar el id del usuario que está logueado 
+      Usuarios_idUsuario: 1,
+    };	
+    console.log(grafo);
+
+    axios.put('http://ins.lpz.ucb.edu.bo:8084/grafos/'+selectedGraph, grafo)
+      .then(response => {
+        console.log(response);
+      }).catch(error => {
+        console.log(error);
+      }
+    );
+
+    isUpdateVisible.value = false;
+}
+
 function showSaveModal() {
   isSaveVisible.value = true;
+}
+
+
+function showUpdateModal() {
+  isUpdateVisible.value = true;
 }
 
 function saveAndHideSaveModal() {
@@ -429,7 +506,7 @@ function saveAndHideSaveModal() {
     Usuarios_idUsuario: 1,
   };	
 
-  axios.post('http://localhost:8080/grafos', grafo)
+  axios.post('http://ins.lpz.ucb.edu.bo:8084/grafos', grafo)
     .then(response => {
       console.log(response);
     }).catch(error => {
@@ -808,6 +885,7 @@ body {
 .modal2 .btn-control-panel,
 .modal3 .btn-control-panel,
 .modal4 .btn-control-panel,
+.modal6 .btn-control-panel,
 .modal5 .btn-control-panel {
   width: 50%;
   height: auto;
@@ -893,6 +971,20 @@ body {
   align-items: center;
   display: flex;
 }
+
+.modal6 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
 .modal-content {
   background-color: #fff;
   padding: 2.5%;
@@ -907,6 +999,7 @@ body {
 .modal2 .modal-content,
 .modal3 .modal-content,
 .modal4 .modal-content,
+.modal6 .modal-content,
 .modal5 .modal-content {
   /**  background-color: #fff;
  */
@@ -940,6 +1033,7 @@ body {
 .modal2 .modal-content h3,
 .modal3 .modal-content h3,
 .modal4 .modal-content h3,
+.modal6 .modal-content h3,
 .modal5 .modal-content h3 {
   margin-top: -2%;
   font-size: 2.2rem;
@@ -949,6 +1043,7 @@ body {
 .modal2 .modal-content input,
 .modal3 .modal-content input,
 .modal4 .modal-content input,
+.modal6 .modal-content input,
 .modal5 .modal-content input {
   height: auto;
   width: 50%;
@@ -1073,6 +1168,7 @@ body {
   .modal2 .modal-content,
   .modal3 .modal-content,
   .modal4 .modal-content,
+  .modal6 .modal-content,
   .modal5 .modal-content {
     /**  background-color: #fff;
  */
@@ -1083,6 +1179,7 @@ body {
   .modal2 .modal-content h3,
   .modal3 .modal-content h3,
   .modal4 .modal-content h3,
+  .modal6 .modal-content h3,
   .modal5 .modal-content h3 {
     font-size: 1.5rem;
     color: #c63637;
@@ -1091,6 +1188,7 @@ body {
   .modal2 .modal-content input,
   .modal3 .modal-content input,
   .modal4 .modal-content input,
+  .modal6 .modal-content input,
   .modal5 .modal-content input {
     margin-top: 0%;
     height: 7%;

@@ -8,30 +8,70 @@ export const getGrafosModel = (idUsuario, result) => {
             result(err, null);
             return;
         }
-        console.log("Grafos: ", res);
-        result(null, res);
+
+        // Iterate through the result and parse JSON properties
+        const parsedRes = res.map((row) => {
+            const parsedNodes = parseJSON(row.nodes);
+            const parsedEdges = parseJSON(row.edges);
+            const parsedLayouts = parseJSON(row.layouts);
+
+            return {
+                ...row,
+                nodes: parsedNodes,
+                edges: parsedEdges,
+                layouts: parsedLayouts,
+            };
+        });
+
+        console.log("Grafos: ", parsedRes);
+        result(null, parsedRes);
     });
 }
 
-// Create a new grafo
+function parseJSON(jsonString) {
+    try {
+        return JSON.parse(jsonString);
+    } catch (error) {
+        return null; // Handle invalid JSON
+    }
+}
 
+
+
+// Create a new grafo
 export const createGrafoModel = (grafo, result) => {
-    db.query("INSERT INTO grafos SET ?", grafo, (err, res) => {
+    // Stringify the JSON properties before inserting them into the database
+    const grafoToInsert = {
+        ...grafo,
+        nodes: JSON.stringify(grafo.nodes),
+        edges: JSON.stringify(grafo.edges),
+        layouts: JSON.stringify(grafo.layouts),
+    };
+
+    db.query("INSERT INTO grafos SET ?", grafoToInsert, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
             return;
-
         }
         console.log("Grafo creado: ", { id: res.insertId, ...grafo });
         result(null, { id: res.insertId, ...grafo });
     });
 }
 
+
 // Update a grafo by id
 
 export const updateGrafoModel = (idGrafo, grafo, result) => {
-    db.query("UPDATE grafos SET nombre = ?, nodes = ?  ,edges = ?, layouts = ? ,WHERE idGrafo = ?", [grafo.nombre, grafo.descripcion, idGrafo], (err, res) => {
+    const grafoToInsert = {
+        ...grafo,
+        nodes: JSON.stringify(grafo.nodes),
+        edges: JSON.stringify(grafo.edges),
+        layouts: JSON.stringify(grafo.layouts),
+    };
+    //delete grafoToInsert.name;
+
+    db.query("UPDATE grafos SET ? WHERE idGrafo = ?", [grafoToInsert,idGrafo], (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
