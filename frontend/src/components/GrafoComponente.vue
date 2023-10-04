@@ -334,6 +334,7 @@ const configs = reactive(
       },
     },
     edge: {
+      selectable: true,
       normal: {
         width: (edge) => edge.width,
         color: (edge) => edge.color,
