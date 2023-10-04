@@ -1,3 +1,4 @@
+
 <template>
   <!--@mousedown="handleClick"-->
   <div>
@@ -52,7 +53,7 @@
           <button class="btn-control-panel" @click="addSkyBlueNode">
             Agregar Nodo Celeste
           </button>
-          <button class="btn-control-panel" @click="addHotPinkNode">
+          <!--<button class="btn-control-panel" @click="addHotPinkNode">
             Agregar Nodo Rosado
           </button>
           <button class="btn-control-panel" @click="addGrayNode">
@@ -60,18 +61,18 @@
           </button>
           <button class="btn-control-panel" @click="addBlackNode">
             Agregar Nodo Negro
-          </button>
+          </button>-->
           <button
             class="btn-control-panel"
             :disabled="selectedNodes.length == 0"
             @click="removeNode"
           >
-            Eliminar
+            Eliminar Nodo
           </button>
         </div>
         <label>Vértices:</label>
         <div class="buttons">
-          <button
+          <!--<button
             class="btn-control-panel"
             :disabled="!isEdgeAddable()"
             @click="addSkyBlueEdge"
@@ -91,13 +92,16 @@
             @click="addGrayEdge"
           >
             Conexión Gris
-          </button>
+          </button>-->
           <button
             class="btn-control-panel"
             :disabled="!isEdgeAddable()"
             @click="addBlackEdge"
           >
             Conexión Negro
+          </button>
+          <button class="btn-control-panel" @click="addLoopEdge">
+            Conexión Loop
           </button>
           <button
             class="btn-control-panel"
@@ -111,6 +115,17 @@
         <div class="buttons">
           <button @click="showMatrixModal" class="btn-control-panel">
             Ver Matriz de Adyacencia
+          </button>
+          <button @click="getGrafosAndShowSelectionModal" class="btn-control-panel">
+            Seleccionar Grafo 
+          </button>
+
+          <button @click="showSaveModal" class="btn-control-panel">
+            Guardar Grafo
+          </button>
+
+          <button @click="showUpdateModal" class="btn-control-panel">
+            Actualizar Grafo
           </button>
         </div>
       </div>
@@ -183,7 +198,57 @@
         </button>
       </div>
     </div>
+
+    <div class="modal4" v-if="isSelectionVisible">
+      <div class="modal-content">
+        <span class="close" @click="getGrafoAndHideSelectionModal">&times;</span>
+        <h3>Elegir Grafo</h3>
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <select v-model="selectedGraph">
+          <option value="" disabled selected>Selecciona un grafo</option>
+          <option v-for="graph in graphOptions" :key="graph.idGrafo" :value="graph.idGrafo">{{ graph.nombre }}</option>
+          <!-- Agrega más opciones según sea necesario -->
+        </select>
+        <br />
+        <button class="btn-control-panel" @click="getGrafoAndHideSelectionModal(selectedGraph)">
+          Aceptar
+        </button>
+      </div>
+    </div>
+
+    <div class="modal5" v-if="isSaveVisible">
+      <div class="modal-content">
+        <span class="close" @click="saveAndHideSaveModal">&times;</span>
+        <h3>Guardar Grafo</h3>
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <label>Nombre grafo:</label>
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <input type="text" id="nombre_grafo"/>
+        <br />
+        <button class="btn-control-panel" @click="saveAndHideSaveModal">
+          Guardar Grafo
+        </button>
+      </div>
+    </div>
   </div>
+
+  <div class="modal6" v-if="isUpdateVisible">
+      <div class="modal-content">
+        <span class="close" @click="isUpdateVisible=false">&times;</span>
+        <h3>Elegir Grafo</h3>
+        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+        <select v-model="selectedGraph">
+          <option value="" disabled selected>Selecciona un grafo</option>
+          <option v-for="graph in graphOptions" :key="graph.idGrafo" :value="graph.idGrafo">{{ graph.nombre }}</option>
+          <!-- Agrega más opciones según sea necesario -->
+        </select>
+        <br />
+        <button class="btn-control-panel" @click="updateGrafoAndHideSelectionModal(selectedGraph)">
+          Aceptar
+        </button>
+      </div>
+    </div>
+
 </template>
 
 <script setup>
@@ -192,6 +257,7 @@ import { useRouter } from "vue-router";
 import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
+import axios from 'axios';
 
 /**SCRIPTS MENU EMERGENTE*/
 
@@ -220,15 +286,20 @@ function toggleMenu(clickX, clickY) {
 
 /**FIN SCRIPTS MENU EMERGENTE */
 
-const nodes = reactive({ ...data.nodes });
-const edges = reactive({ ...data.edges });
+let nodes = reactive({ ...data.nodes });
+let edges = reactive({ ...data.edges });
 
 var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
 const isNodoModalVisible = ref(false);
 const isEdgeModalVisible = ref(false);
+const isSelectionVisible = ref(false);
+const isSaveVisible = ref(false);
+const isUpdateVisible = ref(false);
 let creatingEdge = false;
 let startNode = null;
+
+let graphOptions = [];
 
 const showSidebar = ref(false);
 
@@ -325,6 +396,127 @@ function hideEdgeModal() {
   isEdgeModalVisible.value = false;
 }
 
+async function getGrafosAndShowSelectionModal() {
+  //TODO: Agregar el id del usuario que está logueado
+  
+  graphOptions = await axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
+    .then(response => {
+      return response.data;
+    }).catch(error => {
+      console.log(error);
+    }
+  );
+  console.log(graphOptions);
+  isSelectionVisible.value = true;
+}
+
+function getGrafoAndHideSelectionModal(selectedGraph) {
+  //TODO: Se requiere un endpount para reotornar un solo grafo
+  axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
+    .then(response => {
+      console.log(response);
+      let grafos = response.data;
+      let grafoSeleccionado = grafos.find(grafo => grafo.idGrafo == selectedGraph);
+
+      if(grafoSeleccionado){
+        nodes = grafoSeleccionado.nodes;
+        edges = grafoSeleccionado.edges;
+        data.layouts = grafoSeleccionado.layouts;
+        console.log(nodes);
+        console.log(edges);
+        console.log(data.layouts);
+        adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+        toggleSidebar();
+      }else{
+        console.log("No se encontró el grafo");
+      }
+      
+    }).catch(error => {
+      console.log(error);
+    }
+  );
+  isSelectionVisible.value = false;
+}
+
+async function getGrafosAndShowUpdateModal() {
+  //TODO: Agregar el id del usuario que está logueado
+  graphOptions = await axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
+    .then(response => {
+      return response.data;
+    }).catch(error => {
+      console.log(error);
+    }
+  );
+  console.log(graphOptions);
+  isUpdateVisible.value = true;
+}
+function updateGrafoAndHideSelectionModal(selectedGraph) {
+
+    console.log(nodes);
+    console.log(edges);
+    console.log(data.layouts);
+    console.log(selectedGraph);
+    // locate the name of the graph that coincides with the id of the selected graph
+    var nameSelectedGraph = "";
+    graphOptions.forEach(graph => {
+      if(graph.idGrafo == selectedGraph){
+        nameSelectedGraph = graph.nombre;
+      }
+    });
+    let grafo = {
+      nombre: nameSelectedGraph,
+      nodes: nodes,
+      edges: edges,
+      layouts: data.layouts,
+      //TODO: Agregar el id del usuario que está logueado 
+      Usuarios_idUsuario: 1,
+    };	
+    console.log(grafo);
+
+    axios.put('http://ins.lpz.ucb.edu.bo:8084/grafos/'+selectedGraph, grafo)
+      .then(response => {
+        console.log(response);
+      }).catch(error => {
+        console.log(error);
+      }
+    );
+
+    isUpdateVisible.value = false;
+}
+
+function showSaveModal() {
+  isSaveVisible.value = true;
+}
+
+
+function showUpdateModal() {
+  isUpdateVisible.value = true;
+}
+
+function saveAndHideSaveModal() {
+  console.log(nodes);
+  console.log(edges);
+  console.log(data.layouts);
+  let grafo = {
+    nombre: document.getElementById("nombre_grafo").value,
+    nodes: nodes,
+    edges: edges,
+    layouts: data.layouts,
+    //TODO: Agregar el id del usuario que está logueado 
+    Usuarios_idUsuario: 1,
+  };	
+
+  axios.post('http://ins.lpz.ucb.edu.bo:8084/grafos', grafo)
+    .then(response => {
+      console.log(response);
+    }).catch(error => {
+      console.log(error);
+    }
+  );
+
+  isSaveVisible.value = false;
+}
+
 function toggleSidebar() {
   showSidebar.value = !showSidebar.value;
   console.log(showSidebar.value);
@@ -337,11 +529,11 @@ const backToHomePage = () => {
 };
 
 function addSkyBlueNode() {
-  addNode({ size: 24, color: "lightskyblue", label: true });
+  addNode({ size: 16, color: "lightskyblue", label: true });
 }
 
 function addHotPinkNode() {
-  addNode({ size: 32, color: "hotpink", label: true });
+  addNode({ size: 16, color: "hotpink", label: true });
 }
 
 function addGrayNode() {
@@ -349,7 +541,7 @@ function addGrayNode() {
 }
 
 function addBlackNode() {
-  addNode({ size: 48, color: "black", label: false });
+  addNode({ size: 16, color: "black", label: false });
 }
 
 function addNode(node, x, y) {
@@ -391,8 +583,27 @@ function addBlackEdge() {
   addEdge({ width: 1, color: "black" });
 }
 
+/**función loop */
+function addLoopEdge() {
+  if (selectedNodes.value.length === 1) {
+    const nodeId = selectedNodes.value[0];
+    console.error("Seleccionado solo un nodo, acá bien.");
+    addEdge({ source: nodeId, target: nodeId, width: 1, color: "black" });
+  } else {
+    // Muestra un mensaje de error o realiza alguna otra acción si no se cumple la condición.
+    console.error("Para agregar un bucle, selecciona exactamente un nodo.");
+  }
+}
+/**función loop */
+
 function addEdge(edge) {
-  if (selectedNodes.value.length !== 2) return;
+  if (selectedNodes.value.length !== 2 && selectedNodes.value.length !== 1) {
+    // Si no hay exactamente dos nodos seleccionados, muestra un mensaje de error o realiza alguna otra acción de manejo de errores.
+    console.error(
+      "Selecciona exactamente dos nodos o un nodo para agregar un bucle."
+    );
+    return;
+  }
   const [source, target] = selectedNodes.value;
   const edgeId = `edge${nextEdgeIndex.value++}`;
   edges[edgeId] = { source, target, ...edge };
@@ -408,11 +619,15 @@ function addNodeOnDoubleClick(event) {
 
   const graphElement = document.querySelector(".v-network-graph");
   const rect = graphElement.getBoundingClientRect();
-  const localX = (clickX * 0.92473) - 430;
-  const localY = (clickY * 0.96124) - 620;
+  const localX = clickX * 0.92473 - 430;
+  const localY = clickY * 0.96124 - 620;
   // get the x and y position of the first node
 
-  addNode({ name: "New node", size: 16, color: "lightskyblue",  }, localX, localY);
+  addNode(
+    { name: "New node", size: 16, color: "lightskyblue" },
+    localX,
+    localY
+  );
 }
 
 function removeEdge() {
@@ -453,7 +668,12 @@ function createAdjacencyMatrix(nodes, edges) {
     const targetIndex = nodeKeys.indexOf(edge.target) + 1;
 
     // Verificar si sourceIndex y targetIndex son válidos
-    if (sourceIndex >= 1 && targetIndex >= 1 && sourceIndex < matrixSize && targetIndex < matrixSize) {
+    if (
+      sourceIndex >= 1 &&
+      targetIndex >= 1 &&
+      sourceIndex < matrixSize &&
+      targetIndex < matrixSize
+    ) {
       matrix[sourceIndex][targetIndex] = edge.cost || 1;
     }
   }
@@ -474,7 +694,6 @@ function createAdjacencyMatrix(nodes, edges) {
 
   return matrix;
 }
-
 
 /**function addNodeOnDoubleClick(event) {
   const newNode = {
@@ -664,7 +883,10 @@ body {
 
 .modal .btn-control-panel,
 .modal2 .btn-control-panel,
-.modal3 .btn-control-panel {
+.modal3 .btn-control-panel,
+.modal4 .btn-control-panel,
+.modal6 .btn-control-panel,
+.modal5 .btn-control-panel {
   width: 50%;
   height: auto;
   margin: 2%;
@@ -722,6 +944,47 @@ body {
   align-items: center;
   display: flex;
 }
+.modal4 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.modal5 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.modal6 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
 .modal-content {
   background-color: #fff;
   padding: 2.5%;
@@ -734,7 +997,10 @@ body {
 }
 
 .modal2 .modal-content,
-.modal3 .modal-content {
+.modal3 .modal-content,
+.modal4 .modal-content,
+.modal6 .modal-content,
+.modal5 .modal-content {
   /**  background-color: #fff;
  */
   padding: 2.5%;
@@ -751,15 +1017,34 @@ body {
   background: linear-gradient(90deg, #e3ffe7 0%, #d9e7ff 100%);
 }
 
+.modal4 .modal-content select {
+  width: 50%;
+  height: 25%;
+  border-radius: 25px;
+  position: relative;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: linear-gradient(90deg, #e3ffe7 0%, #d9e7ff 100%);
+}
+
 .modal2 .modal-content h3,
-.modal3 .modal-content h3 {
+.modal3 .modal-content h3,
+.modal4 .modal-content h3,
+.modal6 .modal-content h3,
+.modal5 .modal-content h3 {
   margin-top: -2%;
   font-size: 2.2rem;
   color: #c63637;
 }
 
 .modal2 .modal-content input,
-.modal3 .modal-content input {
+.modal3 .modal-content input,
+.modal4 .modal-content input,
+.modal6 .modal-content input,
+.modal5 .modal-content input {
   height: auto;
   width: 50%;
   font-size: 1rem;
@@ -881,7 +1166,10 @@ body {
     transform: scale(0.8);
   }
   .modal2 .modal-content,
-  .modal3 .modal-content {
+  .modal3 .modal-content,
+  .modal4 .modal-content,
+  .modal6 .modal-content,
+  .modal5 .modal-content {
     /**  background-color: #fff;
  */
     width: 90%;
@@ -889,13 +1177,19 @@ body {
   }
 
   .modal2 .modal-content h3,
-  .modal3 .modal-content h3 {
+  .modal3 .modal-content h3,
+  .modal4 .modal-content h3,
+  .modal6 .modal-content h3,
+  .modal5 .modal-content h3 {
     font-size: 1.5rem;
     color: #c63637;
   }
 
   .modal2 .modal-content input,
-  .modal3 .modal-content input {
+  .modal3 .modal-content input,
+  .modal4 .modal-content input,
+  .modal6 .modal-content input,
+  .modal5 .modal-content input {
     margin-top: 0%;
     height: 7%;
     width: 75%;
