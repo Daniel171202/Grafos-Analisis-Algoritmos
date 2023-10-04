@@ -398,7 +398,8 @@ function hideEdgeModal() {
 
 async function getGrafosAndShowSelectionModal() {
   //TODO: Agregar el id del usuario que está logueado
-  graphOptions = await axios.get('http://localhost:8080/grafos/1')
+  
+  graphOptions = await axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
     .then(response => {
       return response.data;
     }).catch(error => {
@@ -411,7 +412,7 @@ async function getGrafosAndShowSelectionModal() {
 
 function getGrafoAndHideSelectionModal(selectedGraph) {
   //TODO: Se requiere un endpount para reotornar un solo grafo
-  axios.get('http://localhost:8080/grafos/1')
+  axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
     .then(response => {
       console.log(response);
       let grafos = response.data;
@@ -439,7 +440,7 @@ function getGrafoAndHideSelectionModal(selectedGraph) {
 
 async function getGrafosAndShowUpdateModal() {
   //TODO: Agregar el id del usuario que está logueado
-  graphOptions = await axios.get('http://localhost:8080/grafos/1')
+  graphOptions = await axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
     .then(response => {
       return response.data;
     }).catch(error => {
@@ -472,7 +473,7 @@ function updateGrafoAndHideSelectionModal(selectedGraph) {
     };	
     console.log(grafo);
 
-    axios.put('http://localhost:8080/grafos/'+selectedGraph, grafo)
+    axios.put('http://ins.lpz.ucb.edu.bo:8084/grafos/'+selectedGraph, grafo)
       .then(response => {
         console.log(response);
       }).catch(error => {
@@ -505,7 +506,7 @@ function saveAndHideSaveModal() {
     Usuarios_idUsuario: 1,
   };	
 
-  axios.post('http://localhost:8080/grafos', grafo)
+  axios.post('http://ins.lpz.ucb.edu.bo:8084/grafos', grafo)
     .then(response => {
       console.log(response);
     }).catch(error => {
