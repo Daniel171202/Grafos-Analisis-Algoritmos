@@ -1,19 +1,18 @@
 <template>
-    <div class="navbar">
-        <nav>
-        <a @click="goToPage('/')" >INICIO</a>
-        <a @click="goToPage('/grafo')" >GRAFO</a>
-        <a @click="goToPage('/grafo')">INICIAR SESION</a>
-        <div id="indicator"></div>
-</nav>
-    </div>
-  
+  <div class="navbar">
+    <nav>
+      <a @click="goToPage('/')">INICIO</a>
+      <a @click="goToPage('/grafo')">GRAFO</a>
+      <a @click="goToPage('/grafo')">INICIAR SESION</a>
+      <div id="indicator"></div>
+    </nav>
+  </div>
 </template>
 
 <script>
 
 export default {
-  
+
   methods: {
     goToPage(route) {
       this.$router.push(route);
@@ -22,17 +21,14 @@ export default {
 };
 </script>
 
-
 <style scoped>
 html,
-.navbar{
+.navbar {
   height: 7rem;
   width: 100%;
   background: linear-gradient(90deg, #e3ffe7 0%, #d9e7ff 100%);
 
 }
-
-
 
 nav {
 
@@ -126,18 +122,17 @@ nav a:hover:after {
   transform: scale(1);
 }
 
-nav a:nth-child(1):hover ~ #indicator {
+nav a:nth-child(1):hover~#indicator {
   background: linear-gradient(130deg, yellow, red);
 }
 
-nav a:nth-child(2):hover ~ #indicator {
+nav a:nth-child(2):hover~#indicator {
   left: 34%;
   background: linear-gradient(130deg, #00e2ff, #89ff00);
 }
 
-nav a:nth-child(3):hover ~ #indicator {
+nav a:nth-child(3):hover~#indicator {
   left: 70%;
   background: linear-gradient(130deg, purple, palevioletred);
 }
-
 </style>
