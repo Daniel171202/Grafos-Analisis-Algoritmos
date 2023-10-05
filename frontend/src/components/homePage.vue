@@ -42,7 +42,9 @@
           <!--<button class="opciones col-md-4" @click="goToPage('/tercera-pagina')"><span class="move"><i
                 class="fas fa-th fa-bounce"></i><a> Ir a Matriz</a></span></button>-->
         </div>
-      </div>
+        <button class="help"  @click="redirectToDriveFile">Nesecitas ayuda?
+        </button>
+      </div>  
     </body>
   </div>
 </template>
@@ -54,6 +56,13 @@ export default {
     //NavBar,
   },
   methods: {
+    redirectToDriveFile() {
+      // Reemplaza 'URL_DEL_ARCHIVO_EN_GOOGLE_DRIVE' con el enlace público a tu archivo en Google Drive
+      const driveFileUrl = 'https://drive.google.com/file/d/16xFKaWOGo6UIOXd1LE_dta-X-z87Ob5Y/view?usp=drive_link';
+
+      // Abre el enlace en una nueva ventana o pestaña
+      window.open(driveFileUrl, '_blank');
+    },
     goToPage(route) {
       this.$router.push(route);
     },
@@ -144,5 +153,13 @@ body {
     font-size: 1.5rem;
     border-radius: 20px;
   }
+   .help {
+  background-color: #2ecc71; 
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 20px;
+  padding: 5px;
+
+}
 }
 </style>
