@@ -30,7 +30,8 @@ const layouts = {
 
 const nodes = reactive({});
 const edges = reactive({});
-const layouts = {nodes: {}};
+const layouts = { nodes: {} };
+const paths = reactive({});
 export default {
   nodes,
   edges,
