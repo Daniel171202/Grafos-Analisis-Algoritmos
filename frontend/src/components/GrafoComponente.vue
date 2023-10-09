@@ -75,6 +75,9 @@
           <button @click="johnson2" class="btn-control-panel">
             Actualizar Grafo
           </button>
+          <button @click="solveAssignmentProblem" class="btn-control-panel">
+            Solucionar Algoritmo de Asignación
+          </button>
         </div>
       </div>
     </div>
@@ -733,75 +736,6 @@ function getAdjacencyMatrixWithoutHeaders() {
   return numbersAdjacencyMatrix;
 }
 
-//el origen <3
-/*function johnson1() {
-  adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
-  let numbersAdjacencyMatrix = getAdjacencyMatrixWithoutHeaders();
-  console.log(numbersAdjacencyMatrix);
-  const numNodes = adjacencyMatrix.length - 2;
-  console.log(numNodes);
-
-  let distArray = [];
-
-  for (let i = 0; i < numNodes; i++) {
-    distArray[i] = 0;
-  }
-
-  console.log(distArray);
-
-  let lastnode = numNodes - 1;
-  let firstnode = 0;
-  let nodesStack = [0];
-
-  //Hace la primera vuelta desde el nodo inicial al final
-  while (nodesStack.length > 0) {
-    let node = nodesStack.pop();
-    if (node === lastnode) {
-      continue;
-    }
-    for (let i = 0; i < numNodes; i++) {
-      if (numbersAdjacencyMatrix[node][i] !== 0) {
-        console.log("actual node" + i);
-        if (numbersAdjacencyMatrix[node][i] + distArray[node] > distArray[i]) {
-          distArray[i] = numbersAdjacencyMatrix[node][i] + distArray[node];
-        }
-        console.log("value" + distArray[i]);
-        nodesStack.push(i);
-        console.log(nodesStack);
-        console.log(distArray);
-        console.log("-------------");
-      }
-    }
-  }
-
-  //Hace la segunda vuelta desde el nodo final al inicial
-  nodesStack = [lastnode];
-  let criticRoute = [...numbersAdjacencyMatrix];
-
-  while (nodesStack.length > 0) {
-    let node = nodesStack.pop();
-    if (node === firstnode) {
-      continue;
-    }
-    for (let i = 0; i < numNodes; i++) {
-      if (
-        numbersAdjacencyMatrix[i][node] !== 0 &&
-        numbersAdjacencyMatrix[i][node] != -1
-      ) {
-
-        let h =
-          distArray[node] - distArray[i] - numbersAdjacencyMatrix[i][node];
-        console.log("h" + h + "node" + node, "i" + i);
-        criticRoute[i][node] = h;
-        nodesStack.push(i);
-      } else {
-        criticRoute[i][node] = -1;
-      }
-    }
-    console.log(criticRoute);
-  }
-}*/
-
 function johnson2() {
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   let numbersAdjacencyMatrix = getAdjacencyMatrixWithoutHeaders();
@@ -887,20 +821,6 @@ function johnson2() {
       edges[edgeKey].width = 4;
     }
   }
-
-  //construyendo path de la ruta critica
-  /**let paths = {
-    path1: { edges: criticPathEdges },
-    color: "#ff00ff66",
-  }; */
-
-  //estructura de edge
-  //edge4: { source: "node3", target: "node4", width: 3, color: "skyblue" },
-
-  //paths
-  /*const paths: vNG.Paths = {
-  path1: { edges: ["edge1", "edge3", "edge5", "edge7"] },
-}*/
 
   console.log("Ruta crítica:", criticRoute);
   console.log("Detalles de la ruta crítica:", criticPathDetails);
