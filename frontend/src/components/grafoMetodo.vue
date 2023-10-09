@@ -1,155 +1,207 @@
 <template>
   <div>
-    <div class="sidebar">
-      <button
-        style="background-color: RED; cursor: pointer"
-        @click="toggleSidebar"
-      >
-        Mostrar/Ocultar menú
-      </button>
+    <h1>Algoritmo de Asignación</h1>
+
+    <section>
+      <h2>Nodos</h2>
       <div>
-        <label>Nodos:</label>
-        <div>
-          <input v-model="currentNodeName" placeholder="Nombre del nodo" />
-          <button @click="addNode('Tarea')">Agregar tarea</button>
-          <button @click="addNode('Recurso')">Agregar recurso</button>
-          <button @click="removeNode">Eliminar nodo</button>
-        </div>
-
-        <label>Conexiones:</label>
-        <div>
-          <input
-            v-model="currentCost"
-            placeholder="Costo (peso de la arista)"
-          />
-          <button @click="addEdge">Conectar nodos</button>
-          <button @click="removeEdge">Eliminar conexión</button>
-        </div>
-
-        <button @click="resolveAssignment">Resolver asignación</button>
+        <input v-model="nodeName" placeholder="Nombre del nodo" />
+        <select v-model="nodeSide">
+          <option value="left">Izquierda</option>
+          <option value="right">Derecha</option>
+        </select>
+        <button @click="addNode">Agregar nodo</button>
       </div>
-    </div>
+
+      <div>
+        <h3>Nodos Izquierda:</h3>
+        <ul>
+          <li v-for="node in leftNodes" :key="node.id">{{ node.name }}</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>Nodos Derecha:</h3>
+        <ul>
+          <li v-for="node in rightNodes" :key="node.id">{{ node.name }}</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Conexiones</h2>
+      <div>
+        <select v-model="selectedLeftNode">
+          <option disabled value="">Seleccione nodo izquierdo</option>
+          <option v-for="node in leftNodes" :key="node.id" :value="node.id">
+            {{ node.name }}
+          </option>
+        </select>
+
+        <select v-model="selectedRightNode">
+          <option disabled value="">Seleccione nodo derecho</option>
+          <option v-for="node in rightNodes" :key="node.id" :value="node.id">
+            {{ node.name }}
+          </option>
+        </select>
+
+        <input
+          type="number"
+          v-model="connectionWeight"
+          placeholder="Peso de la conexión"
+        />
+
+        <button @click="addConnection" :disabled="!canAddConnection">
+          Agregar conexión
+        </button>
+      </div>
+
+      <ul>
+        <li v-for="connection in connections" :key="connection.id">
+          {{ getNodeName(connection.from) }} ->
+          {{ getNodeName(connection.to) }} : {{ connection.weight }}
+        </li>
+      </ul>
+    </section>
+
+    <section v-if="connections.length">
+      <h2>Resultado de Asignación</h2>
+      <button @click="solveAssignmentProblem">Resolver</button>
+      <ul v-if="assignmentResult.length">
+        <li v-for="result in assignmentResult" :key="result.from">
+          {{ getNodeName(result.from) }} -> {{ getNodeName(result.to) }} :
+          {{ result.weight }}
+        </li>
+      </ul>
+    </section>
+    <section>
+      <h2>Visualización Gráfica</h2>
+      <v-network-graph
+        class="network-graph"
+        :nodes="graphNodes"
+        :edges="graphEdges"
+      ></v-network-graph>
+    </section>
   </div>
-  <v-network-graph
-    v-model:selected-nodes="selectedNodes"
-    v-model:selected-edges="selectedEdges"
-    :nodes="nodes"
-    :edges="edges"
-    @dblclick="addNodeOnDoubleClick"
-  >
-  </v-network-graph>
 </template>
 
-<script setup>
-import { reactive, ref } from "vue";
-import "v-network-graph/lib/style.css";
-import * as vNG from "v-network-graph";
+<script>
 import { Munkres } from "munkres-js";
+import NetworkGraph from "v-network-graph";
+import "v-network-graph/lib/style.css";
 
-const nodes = reactive({});
-const edges = reactive({});
-const selectedNodes = ref([]);
-const selectedEdges = ref([]);
-const showSidebar = ref(false);
-const currentCost = ref("");
-const currentNodeName = ref("");
+export default {
+  data() {
+    return {
+      nodeName: "",
+      nodeSide: "left",
+      leftNodes: [],
+      rightNodes: [],
+      connections: [],
+      nodeCounter: 1,
+      connectionCounter: 1,
+      selectedLeftNode: null,
+      selectedRightNode: null,
+      connectionWeight: null,
+      assignmentResult: [],
+    };
+  },
+  computed: {
+    canAddConnection() {
+      return (
+        this.selectedLeftNode &&
+        this.selectedRightNode &&
+        this.connectionWeight &&
+        this.connectionWeight > 0
+      );
+    },
+    graphNodes() {
+      return [
+        ...this.leftNodes.map((node) => ({
+          id: String(node.id),
+          label: node.name,
+        })),
+        ...this.rightNodes.map((node) => ({
+          id: String(node.id),
+          label: node.name,
+        })),
+      ];
+    },
 
-function toggleSidebar() {
-  console.log("Toggling sidebar"); // Añade esto para diagnóstico
-  showSidebar.value = !showSidebar.value;
-}
+    graphEdges() {
+      return this.connections.map((conn) => ({
+        from: String(conn.from),
+        to: String(conn.to),
+        label: String(conn.weight),
+      }));
+    },
+  },
+  methods: {
+    addNode() {
+      if (!this.nodeName) return;
 
-function addNode(type) {
-  const nodeId = `node${Object.keys(nodes).length + 1}`;
-  const nodeName = currentNodeName.value || nodeId; // Si no se especifica un nombre, se usa el ID por defecto
-  nodes[nodeId] = { label: nodeName, type: type };
-  currentNodeName.value = ""; // Limpiamos el input
-}
-function removeNode() {
-  for (const nodeId of selectedNodes.value) {
-    delete nodes[nodeId];
-  }
-}
+      if (this.nodeSide === "left") {
+        this.leftNodes.push({ id: this.nodeCounter++, name: this.nodeName });
+      } else {
+        this.rightNodes.push({ id: this.nodeCounter++, name: this.nodeName });
+      }
+      this.nodeName = "";
+    },
 
-function addEdge() {
-  if (selectedNodes.value.length !== 2) {
-    alert("Selecciona dos nodos para conectar.");
-    return;
-  }
+    addConnection() {
+      if (!this.canAddConnection) return;
 
-  const edgeId = `edge${Object.keys(edges).length + 1}`;
-  const [source, target] = selectedNodes.value;
-  edges[edgeId] = { source, target, label: currentCost.value };
-  currentCost.value = "";
-}
+      this.connections.push({
+        id: this.connectionCounter++,
+        from: this.selectedLeftNode,
+        to: this.selectedRightNode,
+        weight: parseFloat(this.connectionWeight),
+      });
+      this.selectedLeftNode = null;
+      this.selectedRightNode = null;
+      this.connectionWeight = null;
+    },
 
-function removeEdge() {
-  for (const edgeId of selectedEdges.value) {
-    delete edges[edgeId];
-  }
-}
+    getNodeName(id) {
+      return [...this.leftNodes, ...this.rightNodes].find(
+        (node) => node.id === id
+      ).name;
+    },
 
-function addNodeOnDoubleClick(event) {
-  addNode("Tarea");
-}
+    generateCostMatrix() {
+      let matrix = [];
+      for (let leftNode of this.leftNodes) {
+        let row = [];
+        for (let rightNode of this.rightNodes) {
+          let connection = this.connections.find(
+            (conn) => conn.from === leftNode.id && conn.to === rightNode.id
+          );
+          row.push(connection ? connection.weight : Number.MAX_SAFE_INTEGER); // Usamos un valor grande para representar la falta de conexión
+        }
+        matrix.push(row);
+      }
+      return matrix;
+    },
 
-function resolveAssignment() {
-  // Crear matriz de costos a partir de los nodos y edges.
-  const tareas = Object.keys(nodes).filter((id) => nodes[id].type === "Tarea");
-  const recursos = Object.keys(nodes).filter(
-    (id) => nodes[id].type === "Recurso"
-  );
+    solveAssignmentProblem() {
+      let costMatrix = this.generateCostMatrix();
+      let m = new Munkres();
+      let indexes = m.compute(costMatrix);
 
-  // Inicializar matriz de costos con valores grandes (simulando "infinito").
-  const maxVal = 1000000;
-  const matrix = Array.from({ length: tareas.length }, () =>
-    Array(recursos.length).fill(maxVal)
-  );
-
-  // Llenar la matriz con los costos de los edges.
-  for (const edgeId in edges) {
-    const edge = edges[edgeId];
-    const tareaIndex = tareas.indexOf(edge.source);
-    const recursoIndex = recursos.indexOf(edge.target);
-
-    if (tareaIndex >= 0 && recursoIndex >= 0) {
-      matrix[tareaIndex][recursoIndex] = parseFloat(edge.label);
-    }
-  }
-
-  // Resolver el problema de asignación.
-  const m = new Munkres();
-  const indices = m.compute(matrix);
-
-  // Resaltar las conexiones (edges) que forman la solución óptima.
-  const optimalEdges = [];
-  for (const [i, j] of indices) {
-    const source = tareas[i];
-    const target = recursos[j];
-    const edgeId = Object.keys(edges).find(
-      (id) => edges[id].source === source && edges[id].target === target
-    );
-    if (edgeId) optimalEdges.push(edgeId);
-  }
-
-  // Ahora podrías usar `optimalEdges` para resaltar visualmente estas conexiones en el gráfico.
-  // Por simplicidad, aquí sólo vamos a mostrarlas en consola:
-  console.log("Edges óptimos:", optimalEdges);
-}
+      this.assignmentResult = indexes.map(([i, j]) => {
+        return {
+          from: this.leftNodes[i].id,
+          to: this.rightNodes[j].id,
+          weight: costMatrix[i][j],
+        };
+      });
+    },
+  },
+};
 </script>
-
 <style scoped>
-.sidebar {
-  width: 200px;
-  padding: 10px;
-  border-right: 1px solid #ddd;
-  float: left;
-  height: 20vh;
-  background-color: aqua;
-  z-index: 100;
-}
-
-v-network-graph {
-  margin-left: 220px;
+.network-graph {
+  width: 100%;
+  height: 500px;
 }
 </style>
