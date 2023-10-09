@@ -39,8 +39,12 @@
               ><i class="fas fa-cogs fa-bounce"></i><a> Ir a Grafos</a></span
             >
           </button>
-          <!--<button class="opciones col-md-4" @click="goToPage('/tercera-pagina')"><span class="move"><i
-                class="fas fa-th fa-bounce"></i><a> Ir a Matriz</a></span></button>-->
+          <button class="opciones col-md-4" @click="goToPage('/Asignación')">
+            <span class="move"
+              ><i class="fas fa-th fa-bounce"></i
+              ><a> Ir a Algoritmo de Asignación</a></span
+            >
+          </button>
         </div>
       </div>
     </body>

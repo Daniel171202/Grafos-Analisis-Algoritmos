@@ -1,4 +1,3 @@
-
 <template>
   <!--@mousedown="handleClick"-->
   <div>
@@ -10,33 +9,6 @@
           height="33"
         />
       </button>
-      <!--
-        FUNCIONALIDAD DE MOSTRAR EL MENU CON DESPUÉS DE DOBLECLICK
-        <div class="menu" v-if="menuVisible" :style="menuStyles" @dblclick.stop>
-        <label>Nodos:</label>
-        <div class="buttons">
-          <button class="btn-control-panel" @click="addSkyBlueNode">
-            Agregar Nodo Celeste
-          </button>
-          <button class="btn-control-panel" @click="addHotPinkNode">
-            Agregar Nodo Rosado
-          </button>
-          <button class="btn-control-panel" @click="addGrayNode">
-            Agregar Nodo Gris
-          </button>
-          <button class="btn-control-panel" @click="addBlackNode">
-            Agregar Nodo Negro
-          </button>
-          <button
-            class="btn-control-panel"
-            :disabled="selectedNodes.length == 0"
-            @click="removeNode"
-          >
-            Eliminar
-          </button>
-        </div>
-      </div>
-      -->
 
       <div class="sidebar" :class="{ 'show-sidebar': showSidebar }">
         <!--      <h3>Menú</h3>
@@ -53,15 +25,6 @@
           <button class="btn-control-panel" @click="addSkyBlueNode">
             Agregar Nodo Celeste
           </button>
-          <!--<button class="btn-control-panel" @click="addHotPinkNode">
-            Agregar Nodo Rosado
-          </button>
-          <button class="btn-control-panel" @click="addGrayNode">
-            Agregar Nodo Gris
-          </button>
-          <button class="btn-control-panel" @click="addBlackNode">
-            Agregar Nodo Negro
-          </button>-->
           <button
             class="btn-control-panel"
             :disabled="selectedNodes.length == 0"
@@ -72,27 +35,6 @@
         </div>
         <label>Vértices:</label>
         <div class="buttons">
-          <!--<button
-            class="btn-control-panel"
-            :disabled="!isEdgeAddable()"
-            @click="addSkyBlueEdge"
-          >
-            Conexión Celeste
-          </button>
-          <button
-            class="btn-control-panel"
-            :disabled="!isEdgeAddable()"
-            @click="addHotPinkEdge"
-          >
-            Conexión Rosado
-          </button>
-          <button
-            class="btn-control-panel"
-            :disabled="!isEdgeAddable()"
-            @click="addGrayEdge"
-          >
-            Conexión Gris
-          </button>-->
           <button
             class="btn-control-panel"
             :disabled="!isEdgeAddable()"
@@ -116,8 +58,11 @@
           <button @click="showMatrixModal" class="btn-control-panel">
             Ver Matriz de Adyacencia
           </button>
-          <button @click="getGrafosAndShowSelectionModal" class="btn-control-panel">
-            Seleccionar Grafo 
+          <button
+            @click="getGrafosAndShowSelectionModal"
+            class="btn-control-panel"
+          >
+            Seleccionar Grafo
           </button>
 
           <button @click="showSaveModal" class="btn-control-panel">
@@ -126,6 +71,12 @@
 
           <button @click="showUpdateModal" class="btn-control-panel">
             Actualizar Grafo
+          </button>
+          <button @click="johnson2" class="btn-control-panel">
+            Actualizar Grafo
+          </button>
+          <button @click="solveAssignmentProblem" class="btn-control-panel">
+            Solucionar Algoritmo de Asignación
           </button>
         </div>
       </div>
@@ -138,6 +89,7 @@
       :nodes="nodes"
       :edges="edges"
       :layouts="data.layouts"
+      :paths="paths"
       :configs="configs"
       @dblclick="addNodeOnDoubleClick"
     >
@@ -201,16 +153,27 @@
 
     <div class="modal4" v-if="isSelectionVisible">
       <div class="modal-content">
-        <span class="close" @click="getGrafoAndHideSelectionModal">&times;</span>
+        <span class="close" @click="getGrafoAndHideSelectionModal"
+          >&times;</span
+        >
         <h3>Elegir Grafo</h3>
         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
         <select v-model="selectedGraph">
           <option value="" disabled selected>Selecciona un grafo</option>
-          <option v-for="graph in graphOptions" :key="graph.idGrafo" :value="graph.idGrafo">{{ graph.nombre }}</option>
+          <option
+            v-for="graph in graphOptions"
+            :key="graph.idGrafo"
+            :value="graph.idGrafo"
+          >
+            {{ graph.nombre }}
+          </option>
           <!-- Agrega más opciones según sea necesario -->
         </select>
         <br />
-        <button class="btn-control-panel" @click="getGrafoAndHideSelectionModal(selectedGraph)">
+        <button
+          class="btn-control-panel"
+          @click="getGrafoAndHideSelectionModal(selectedGraph)"
+        >
           Aceptar
         </button>
       </div>
@@ -223,7 +186,7 @@
         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
         <label>Nombre grafo:</label>
         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
-        <input type="text" id="nombre_grafo"/>
+        <input type="text" id="nombre_grafo" />
         <br />
         <button class="btn-control-panel" @click="saveAndHideSaveModal">
           Guardar Grafo
@@ -233,22 +196,30 @@
   </div>
 
   <div class="modal6" v-if="isUpdateVisible">
-      <div class="modal-content">
-        <span class="close" @click="isUpdateVisible=false">&times;</span>
-        <h3>Elegir Grafo</h3>
-        <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
-        <select v-model="selectedGraph">
-          <option value="" disabled selected>Selecciona un grafo</option>
-          <option v-for="graph in graphOptions" :key="graph.idGrafo" :value="graph.idGrafo">{{ graph.nombre }}</option>
-          <!-- Agrega más opciones según sea necesario -->
-        </select>
-        <br />
-        <button class="btn-control-panel" @click="updateGrafoAndHideSelectionModal(selectedGraph)">
-          Aceptar
-        </button>
-      </div>
+    <div class="modal-content">
+      <span class="close" @click="isUpdateVisible = false">&times;</span>
+      <h3>Elegir Grafo</h3>
+      <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
+      <select v-model="selectedGraph">
+        <option value="" disabled selected>Selecciona un grafo</option>
+        <option
+          v-for="graph in graphOptions"
+          :key="graph.idGrafo"
+          :value="graph.idGrafo"
+        >
+          {{ graph.nombre }}
+        </option>
+        <!-- Agrega más opciones según sea necesario -->
+      </select>
+      <br />
+      <button
+        class="btn-control-panel"
+        @click="updateGrafoAndHideSelectionModal(selectedGraph)"
+      >
+        Aceptar
+      </button>
     </div>
-
+  </div>
 </template>
 
 <script setup>
@@ -257,37 +228,11 @@ import { useRouter } from "vue-router";
 import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
-import axios from 'axios';
-
-/**SCRIPTS MENU EMERGENTE*/
-
-/**const menuVisible = ref(false);
-const menuStyles = ref({
-  display: "none",
-  position: "absolute",
-  top: "0",
-  left: "0",
-});
-function handleClick(event) {
-  if (!event.target.classList.contains("v-network-graph")) {
-    toggleMenu(event.clientX, event.clientY);
-  }
-}
-
-function toggleMenu(clickX, clickY) {
-  menuVisible.value = !menuVisible.value;
-  menuStyles.value = {
-    display: menuVisible.value ? "block" : "none",
-    position: "absolute",
-    top: `${clickY}px`,
-    left: `${clickX}px`,
-  };
-} */
-
-/**FIN SCRIPTS MENU EMERGENTE */
+import axios from "axios";
 
 let nodes = reactive({ ...data.nodes });
 let edges = reactive({ ...data.edges });
+let paths = reactive({ ...data.paths });
 
 var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
@@ -309,7 +254,7 @@ const configs = reactive(
       scalingObjects: true,
       minZoomLevel: 1,
       zoomEnabled: true,
-      doubleClickZoomEnabled: false, // Whether to zoom with double click. default: true
+      doubleClickZoomEnabled: false,
       mouseWheelZoomEnabled: true,
       panEnabled: true,
       autoPanAndZoomOnLoad: "fit-content",
@@ -334,6 +279,7 @@ const configs = reactive(
       },
     },
     edge: {
+      selectable: true,
       normal: {
         width: (edge) => edge.width,
         color: (edge) => edge.color,
@@ -359,6 +305,13 @@ const configs = reactive(
           units: "strokeWidth",
           color: null,
         },
+      },
+    },
+    path: {
+      visible: true,
+      normal: {
+        width: 10,
+        color: (p) => p.color,
       },
     },
   })
@@ -398,27 +351,31 @@ function hideEdgeModal() {
 
 async function getGrafosAndShowSelectionModal() {
   //TODO: Agregar el id del usuario que está logueado
-  
-  graphOptions = await axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
-    .then(response => {
+
+  graphOptions = await axios
+    .get("http://ins.lpz.ucb.edu.bo:8084/grafos/1")
+    .then((response) => {
       return response.data;
-    }).catch(error => {
+    })
+    .catch((error) => {
       console.log(error);
-    }
-  );
+    });
   console.log(graphOptions);
   isSelectionVisible.value = true;
 }
 
 function getGrafoAndHideSelectionModal(selectedGraph) {
   //TODO: Se requiere un endpount para reotornar un solo grafo
-  axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
-    .then(response => {
+  axios
+    .get("http://ins.lpz.ucb.edu.bo:8084/grafos/1")
+    .then((response) => {
       console.log(response);
       let grafos = response.data;
-      let grafoSeleccionado = grafos.find(grafo => grafo.idGrafo == selectedGraph);
+      let grafoSeleccionado = grafos.find(
+        (grafo) => grafo.idGrafo == selectedGraph
+      );
 
-      if(grafoSeleccionado){
+      if (grafoSeleccionado) {
         nodes = grafoSeleccionado.nodes;
         edges = grafoSeleccionado.edges;
         data.layouts = grafoSeleccionado.layouts;
@@ -427,67 +384,66 @@ function getGrafoAndHideSelectionModal(selectedGraph) {
         console.log(data.layouts);
         adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
         toggleSidebar();
-      }else{
+      } else {
         console.log("No se encontró el grafo");
       }
-      
-    }).catch(error => {
+    })
+    .catch((error) => {
       console.log(error);
-    }
-  );
+    });
   isSelectionVisible.value = false;
 }
 
 async function getGrafosAndShowUpdateModal() {
   //TODO: Agregar el id del usuario que está logueado
-  graphOptions = await axios.get('http://ins.lpz.ucb.edu.bo:8084/grafos/1')
-    .then(response => {
+  graphOptions = await axios
+    .get("http://ins.lpz.ucb.edu.bo:8084/grafos/1")
+    .then((response) => {
       return response.data;
-    }).catch(error => {
+    })
+    .catch((error) => {
       console.log(error);
-    }
-  );
+    });
   console.log(graphOptions);
   isUpdateVisible.value = true;
 }
 function updateGrafoAndHideSelectionModal(selectedGraph) {
+  console.log(nodes);
+  console.log(edges);
+  console.log(data.layouts);
+  console.log(selectedGraph);
+  // locate the name of the graph that coincides with the id of the selected graph
+  var nameSelectedGraph = "";
+  graphOptions.forEach((graph) => {
+    if (graph.idGrafo == selectedGraph) {
+      nameSelectedGraph = graph.nombre;
+    }
+  });
+  let grafo = {
+    nombre: nameSelectedGraph,
+    nodes: nodes,
+    edges: edges,
+    layouts: data.layouts,
+    //TODO: Agregar el id del usuario que está logueado
+    Usuarios_idUsuario: 1,
+  };
+  console.log(grafo);
 
-    console.log(nodes);
-    console.log(edges);
-    console.log(data.layouts);
-    console.log(selectedGraph);
-    // locate the name of the graph that coincides with the id of the selected graph
-    var nameSelectedGraph = "";
-    graphOptions.forEach(graph => {
-      if(graph.idGrafo == selectedGraph){
-        nameSelectedGraph = graph.nombre;
-      }
+  axios
+    .put("http://ins.lpz.ucb.edu.bo:8084/grafos/" + selectedGraph, grafo)
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((error) => {
+      console.log(error);
     });
-    let grafo = {
-      nombre: nameSelectedGraph,
-      nodes: nodes,
-      edges: edges,
-      layouts: data.layouts,
-      //TODO: Agregar el id del usuario que está logueado 
-      Usuarios_idUsuario: 1,
-    };	
-    console.log(grafo);
 
-    axios.put('http://ins.lpz.ucb.edu.bo:8084/grafos/'+selectedGraph, grafo)
-      .then(response => {
-        console.log(response);
-      }).catch(error => {
-        console.log(error);
-      }
-    );
-
-    isUpdateVisible.value = false;
+  isUpdateVisible.value = false;
 }
 
 function showSaveModal() {
   isSaveVisible.value = true;
 }
-
 
 function showUpdateModal() {
   isUpdateVisible.value = true;
@@ -502,17 +458,18 @@ function saveAndHideSaveModal() {
     nodes: nodes,
     edges: edges,
     layouts: data.layouts,
-    //TODO: Agregar el id del usuario que está logueado 
+    //TODO: Agregar el id del usuario que está logueado
     Usuarios_idUsuario: 1,
-  };	
+  };
 
-  axios.post('http://ins.lpz.ucb.edu.bo:8084/grafos', grafo)
-    .then(response => {
+  axios
+    .post("http://ins.lpz.ucb.edu.bo:8084/grafos", grafo)
+    .then((response) => {
       console.log(response);
-    }).catch(error => {
+    })
+    .catch((error) => {
       console.log(error);
-    }
-  );
+    });
 
   isSaveVisible.value = false;
 }
@@ -609,8 +566,8 @@ function addEdge(edge) {
   edges[edgeId] = { source, target, ...edge };
   actualEdgeIndex.value = edgeId;
   console.log(edges);
-  adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   showEdgeModal();
+  adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 }
 
 function addNodeOnDoubleClick(event) {
@@ -695,57 +652,264 @@ function createAdjacencyMatrix(nodes, edges) {
   return matrix;
 }
 
-/**function addNodeOnDoubleClick(event) {
-  const newNode = {
-    size: 24,
-    color: "lightskyblue",
-    label: true,
-    x: event.offsetX, // X-coordinates based on the click position
-    y: event.offsetY, // Y-coordinates based on the click position
-  };
-  console.log(event.clientX, event.clientY);
-  // get the x and y position of the first node
-
-  addNode(newNode, event.clientX, event.clientY);
-} */
-
-/* function createAdjacencyMatrix(nodesJSON, edgesJSON) {
-   const nodes = nodesJSON;
-   const edges = edgesJSON;
-   
-   const nodeKeys = Object.keys(nodes);
-   const nodeIndexMap = {};
-   
-   console.log(nodeKeys);
-
-   nodeKeys.forEach((key, index) => {
-       nodeIndexMap[key] = index;
-   });
-
-   console.log(nodeIndexMap)
-   
-   const matrix = Array.from({ length: nodeKeys.length }, () =>
-       Array.from({ length: nodeKeys.length }, () => 0)
-   );
-
-   console.log(matrix);
-   
-   Object.values(edges).forEach((edge) => {
-       const sourceIndex = nodeIndexMap[edge.source];
-       const targetIndex = nodeIndexMap[edge.target];
-       
-       matrix[sourceIndex][targetIndex] = 1; // You can also set edge properties if needed
-   });
-   
-   return matrix;
-}*/
-
 function nameofEdge(edge) {
   const label = edge.label !== null ? edge.label : "";
   const cost = edge.cost !== null ? edge.cost : "";
   const aux =
     label || cost ? `${label}${label && cost ? ": " : ""}${cost}` : " ";
   return aux;
+}
+
+/**Función de Johnson */
+
+function johnson() {
+  // Obtiene los datos de la matriz adyacente
+  const numNodes = adjacencyMatrix.length - 1; // Ignoramos las filas/columnas de sumas
+  let dist = Array.from({ length: numNodes }, () =>
+    Array(numNodes).fill(Infinity)
+  );
+  let prev = Array.from({ length: numNodes }, () => Array(numNodes).fill(-1));
+
+  //Va a llenar la matriz de distancias y previos con sus valores y todos los nodos
+  //que no tienen conexión directa se les asigna un valor de infinito
+  //solo toma en cuenta aristas con pesos
+  //Acá hace la primera vuelta desde el nodo inicial al final
+  for (let i = 1; i < numNodes; i++) {
+    for (let j = 1; j < numNodes; j++) {
+      if (adjacencyMatrix[i][j] !== 0) {
+        dist[i - 1][j - 1] = adjacencyMatrix[i][j];
+        prev[i - 1][j - 1] = i - 1;
+      }
+    }
+  }
+
+  //al recuperar de la matriz vamos a hacer la segunda vuelta desde el nodo final al inicial
+  //para ver si hay un camino más corto
+
+  for (let k = 0; k < numNodes; k++) {
+    for (let i = 0; i < numNodes; i++) {
+      for (let j = 0; j < numNodes; j++) {
+        if (
+          dist[i][k] !== Infinity &&
+          dist[k][j] !== Infinity &&
+          dist[i][j] > dist[i][k] + dist[k][j]
+        ) {
+          dist[i][j] = dist[i][k] + dist[k][j];
+          prev[i][j] = prev[k][j];
+        }
+      }
+    }
+  }
+
+  // Obtener la ruta más corta desde el nodo inicial al final
+  //Acá estoy sacando los nombres y valores de la ruta más corta, pero lo tengo que va desde 0 hasta el nodo final
+  //no saca el nombre del nodo como tal
+
+  let node = numNodes - 1; // Nodo final
+  const path = [];
+  while (node !== -1) {
+    path.unshift(node);
+    node = prev[0][node];
+  }
+
+  // Imprimir la ruta más corta y la ruta crítica
+  console.log("Ruta más corta desde nodo 0 al nodo final:", path);
+  console.log("Distancia total:", dist[0][numNodes - 1]);
+}
+
+/**fin función de Johnson */
+
+/**prueba */
+
+function getAdjacencyMatrixWithoutHeaders() {
+  const numNodes = adjacencyMatrix.length - 2;
+  let numbersAdjacencyMatrix = Array.from({ length: numNodes }, () =>
+    Array(numNodes).fill(0)
+  );
+
+  for (let i = 1; i <= numNodes; i++) {
+    for (let j = 1; j <= numNodes; j++) {
+      numbersAdjacencyMatrix[i - 1][j - 1] = adjacencyMatrix[i][j];
+    }
+  }
+
+  return numbersAdjacencyMatrix;
+}
+
+function johnson2() {
+  adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+  let numbersAdjacencyMatrix = getAdjacencyMatrixWithoutHeaders();
+  console.log(numbersAdjacencyMatrix);
+  const numNodes = adjacencyMatrix.length - 2;
+  console.log(numNodes);
+
+  let distArray = new Array(numNodes).fill(0);
+  let prev = new Array(numNodes).fill(-1);
+
+  let lastnode = numNodes - 1;
+  let firstnode = 0;
+  let nodesStack = [0];
+
+  // Primera vuelta desde el nodo inicial al final
+  while (nodesStack.length > 0) {
+    let node = nodesStack.pop();
+    if (node === lastnode) {
+      continue;
+    }
+    for (let i = 0; i < numNodes; i++) {
+      if (
+        numbersAdjacencyMatrix[node][i] !== 0 &&
+        distArray[node] + numbersAdjacencyMatrix[node][i] > distArray[i]
+      ) {
+        distArray[i] = distArray[node] + numbersAdjacencyMatrix[node][i];
+        prev[i] = node; // Almacenamos el nodo anterior
+        nodesStack.push(i);
+      }
+    }
+  }
+
+  // Reconstruir la ruta crítica desde el nodo final al inicial
+  let criticRoute = [];
+  let currentNode = lastnode;
+
+  while (currentNode !== -1) {
+    criticRoute.unshift(currentNode);
+    currentNode = prev[currentNode];
+  }
+
+  // Extraer nombres y pesos de la ruta crítica
+  let criticPathDetails = [];
+  for (let i = 0; i < criticRoute.length - 1; i++) {
+    let fromNode = criticRoute[i];
+    let toNode = criticRoute[i + 1];
+    let weight = numbersAdjacencyMatrix[fromNode][toNode];
+    criticPathDetails.push({
+      from: fromNode,
+      to: toNode,
+      weight: weight,
+    });
+  }
+
+  let nombresNodos = adjacencyMatrix[0].slice(1, adjacencyMatrix.length - 1); //Solo los nombres de los noddos
+
+  for (let i = 0; i < nombresNodos.length; i++) {
+    nombresNodos[i] = nombresNodos[i].replace(" ", "");
+    nombresNodos[i] = nombresNodos[i].toLowerCase();
+  }
+
+  console.log(nombresNodos);
+
+  // obteniendo nombres de edges de la ruta crítica
+  let criticPathEdges = [];
+
+  for (const edgeKey in edges) {
+    const edge = edges[edgeKey];
+    for (let i = 0; i < criticPathDetails.length; i++) {
+      if (
+        edge.source === nombresNodos[criticPathDetails[i].from] &&
+        edge.target === nombresNodos[criticPathDetails[i].to]
+      ) {
+        console.log("Encontrado", edge);
+        criticPathEdges.push(edgeKey.toString());
+      }
+    }
+  }
+
+  for (const edgeKey of criticPathEdges) {
+    if (edges[edgeKey]) {
+      edges[edgeKey].color = "#ff00ff"; // Cambiamos el color a un morado brillante.
+      edges[edgeKey].width = 4;
+    }
+  }
+
+  console.log("Ruta crítica:", criticRoute);
+  console.log("Detalles de la ruta crítica:", criticPathDetails);
+}
+
+function johnson3() {
+  adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+  let numbersAdjacencyMatrix = getAdjacencyMatrixWithoutHeaders();
+  console.log(numbersAdjacencyMatrix);
+  const numNodes = adjacencyMatrix.length - 2;
+  console.log(numNodes);
+
+  let distArray = new Array(numNodes).fill(0);
+  let prev = new Array(numNodes).fill(-1);
+
+  let lastnode = numNodes - 1;
+  let firstnode = 0;
+  let nodesStack = [0];
+
+  // Primera vuelta desde el nodo inicial al final
+  while (nodesStack.length > 0) {
+    let node = nodesStack.pop();
+    if (node === lastnode) {
+      continue;
+    }
+    for (let i = 0; i < numNodes; i++) {
+      if (
+        numbersAdjacencyMatrix[node][i] !== 0 &&
+        distArray[node] + numbersAdjacencyMatrix[node][i] > distArray[i]
+      ) {
+        distArray[i] = distArray[node] + numbersAdjacencyMatrix[node][i];
+        prev[i] = node;
+        nodesStack.push(i);
+      }
+    }
+  }
+
+  // Reconstruir la ruta crítica
+  let criticRoute = [];
+  let currentNode = lastnode;
+  while (currentNode !== -1) {
+    criticRoute.unshift(currentNode);
+    currentNode = prev[currentNode];
+  }
+
+  // Extraer detalles de la ruta crítica
+  let criticPathDetails = criticRoute
+    .map((node, index) => {
+      if (index < criticRoute.length - 1) {
+        return {
+          from: node,
+          to: criticRoute[index + 1],
+          weight: numbersAdjacencyMatrix[node][criticRoute[index + 1]],
+        };
+      }
+      return null;
+    })
+    .filter((item) => item !== null);
+
+  let nombresNodos = adjacencyMatrix[0].slice(1, adjacencyMatrix.length - 1);
+
+  nombresNodos = nombresNodos.map((nombre) =>
+    nombre.replace(" ", "").toLowerCase()
+  );
+
+  // Obtener aristas de la ruta crítica
+  let criticPathEdges = Object.keys(edges).filter((edgeKey) => {
+    const edge = edges[edgeKey];
+    return criticPathDetails.some((detail) => {
+      return (
+        edge.source === nombresNodos[detail.from] &&
+        edge.target === nombresNodos[detail.to]
+      );
+    });
+  });
+
+  // Construir paths para vue-network graph
+  const paths = reactive({
+    path1: {
+      edges: criticPathEdges,
+      color: "#ff00ff66",
+    },
+  });
+
+  console.log("Ruta crítica:", criticRoute);
+  console.log("Detalles de la ruta crítica:", criticPathDetails);
+
+  // Retorna paths para que puedas usarlo donde lo necesites
+  return paths;
 }
 </script>
 
