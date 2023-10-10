@@ -75,8 +75,11 @@
           <button @click="johnson2" class="btn-control-panel">
             Actualizar Grafo
           </button>
-          <button @click="solveAssignmentProblem" class="btn-control-panel">
+          <button @click="usoAsignacion" class="btn-control-panel">
             Solucionar Algoritmo de Asignación
+          </button>
+          <button @click="usoAsignacionMax" class="btn-control-panel">
+            Solucionar Algoritmo de Asignación Maximizacion
           </button>
         </div>
       </div>
@@ -220,6 +223,15 @@
       </button>
     </div>
   </div>
+
+  <div class="modal7" v-if="isResultadoAsignacionVisible">
+      <div class="modal-content">
+        <span class="close" @click="hideResultadoAsignacion()">&times;</span>
+        <h4 style="font-size: 1.5rem; " v-for="linea in respuestaAsignacion" :key="linea"> {{ linea }}</h4>
+        
+      </div>
+  
+  </div>
 </template>
 
 <script setup>
@@ -229,6 +241,7 @@ import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
 import axios from "axios";
+import {Munkres } from 'munkres-js';
 
 let nodes = reactive({ ...data.nodes });
 let edges = reactive({ ...data.edges });
@@ -241,10 +254,13 @@ const isEdgeModalVisible = ref(false);
 const isSelectionVisible = ref(false);
 const isSaveVisible = ref(false);
 const isUpdateVisible = ref(false);
+const isResultadoAsignacionVisible = ref(false);
 let creatingEdge = false;
 let startNode = null;
 
 let graphOptions = [];
+
+let respuestaAsignacion = "";
 
 const showSidebar = ref(false);
 
@@ -383,6 +399,7 @@ function getGrafoAndHideSelectionModal(selectedGraph) {
         console.log(edges);
         console.log(data.layouts);
         adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+        console.log(adjacencyMatrix);
         toggleSidebar();
       } else {
         console.log("No se encontró el grafo");
@@ -656,7 +673,7 @@ function nameofEdge(edge) {
   const label = edge.label !== null ? edge.label : "";
   const cost = edge.cost !== null ? edge.cost : "";
   const aux =
-    label || cost ? `${label}${label && cost ? ": " : ""}${cost}` : " ";
+    label || cost ? `${label && cost ? " " : ""}${cost}` : " ";
   return aux;
 }
 
@@ -719,6 +736,189 @@ function johnson() {
 
 /**fin función de Johnson */
 
+
+
+  // Algoritmo de asignación
+
+  function hungarianAlgorithm(matrix) {
+  const numRows = matrix.length;
+  const numCols = matrix[0].length;
+
+  // Paso 1: Reducir las filas
+  for (let i = 0; i < numRows; i++) {
+    const minInRow = Math.min(...matrix[i]);
+    for (let j = 0; j < numCols; j++) {
+      matrix[i][j] -= minInRow;
+    }
+  }
+
+  // Paso 2: Reducir las columnas
+  for (let j = 0; j < numCols; j++) {
+    const minInColumn = Math.min(...matrix.map(row => row[j]));
+    for (let i = 0; i < numRows; i++) {
+      matrix[i][j] -= minInColumn;
+    }
+  }
+
+  const assignedRows = new Array(numRows).fill(false);
+  const assignedCols = new Array(numCols).fill(false);
+
+  const assignment = new Array(numCols).fill(-1);
+
+  for (let row = 0; row < numRows; row++) {
+    for (let col = 0; col < numCols; col++) {
+      if (matrix[row][col] === 0 && !assignedRows[row] && !assignedCols[col]) {
+        assignment[col] = row;
+        assignedRows[row] = true;
+        assignedCols[col] = true;
+        break;
+      }
+    }
+  }
+
+  // Paso 3: Buscar ceros sin asignar
+  const unassignedRows = assignedRows.map((assigned, index) => !assigned ? index : -1).filter(index => index !== -1);
+  const unassignedCols = assignedCols.map((assigned, index) => !assigned ? index : -1).filter(index => index !== -1);
+
+  while (unassignedCols.length > 0) {
+    let row = -1;
+    let col = -1;
+    let minVal = Infinity;
+
+    for (let i = 0; i < unassignedRows.length; i++) {
+      for (let j = 0; j < unassignedCols.length; j++) {
+        const r = unassignedRows[i];
+        const c = unassignedCols[j];
+        if (matrix[r][c] < minVal) {
+          minVal = matrix[r][c];
+          row = r;
+          col = c;
+        }
+      }
+    }
+
+    assignment[col] = row;
+    assignedRows[row] = true;
+    assignedCols[col] = true;
+
+    const unassignedRowIdx = unassignedRows.indexOf(row);
+    if (unassignedRowIdx !== -1) {
+      unassignedRows.splice(unassignedRowIdx, 1);
+    }
+
+    const unassignedColIdx = unassignedCols.indexOf(col);
+    if (unassignedColIdx !== -1) {
+      unassignedCols.splice(unassignedColIdx, 1);
+    }
+  }
+
+  return assignment;
+}
+
+function usoAsignacion() {
+  const originalMatrix = adjacencyMatrix;
+
+  // Obtener una matriz 3x3 reducida
+  const rowHeaders = originalMatrix.slice(1, 4).map(row => row[0]);
+
+  // Obtener una matriz 3x3 reducida con encabezados y títulos de fila
+  const matrix = [];
+  const headers = [" ", ...rowHeaders];
+
+  for (let i = 1; i <= 3; i++) {
+    const row = originalMatrix[i].slice(4, 7);
+    row.unshift(rowHeaders[i - 1]);
+    matrix.push(row);
+  }
+
+  matrix.unshift(headers);
+
+  // Aplicar el algoritmo de asignación (máximización)
+  let m = new Munkres();
+  let indices = m.compute(matrix.slice(1).map(row => row.slice(1)));
+
+  // Imprimir la asignación en el formato deseado
+  let respuesta = [];
+  let costoTotal = 0;
+  for (let i = 0; i < indices.length; i++) {
+    const destination = rowHeaders[indices[i][0]];
+    const city = ` ${indices[i][1] + 1}`;
+    const cost = matrix[indices[i][0] + 1][indices[i][1] + 1];
+    console.log(`Asignar ${destination} a ${city} con un costo de ${cost}`);
+    respuesta.push( `Asignar ${destination} a ${city} con un costo de ${cost}`);
+    costoTotal += cost;
+
+  }
+  respuesta.push( `Costo total: ${costoTotal}`);
+  console.log(respuesta);
+  respuestaAsignacion = respuesta;
+  console.log(respuestaAsignacion);
+  isResultadoAsignacionVisible.value = true;
+}
+
+
+function usoAsignacionMax() {
+  const originalMatrix = adjacencyMatrix;
+
+  // Obtener una matriz 3x3 reducida
+  const rowHeaders = originalMatrix.slice(1, 4).map(row => row[0]);
+
+  // Obtener una matriz 3x3 reducida con encabezados y títulos de fila
+  const matrix = [];
+  const headers = [" ", ...rowHeaders];
+
+  for (let i = 1; i <= 3; i++) {
+    const row = originalMatrix[i].slice(4, 7);
+    row.unshift(rowHeaders[i - 1]);
+    matrix.push(row);
+  }
+
+  matrix.unshift(headers);
+
+  // Encontrar el valor máximo en la matriz original
+  let maxValue = -Infinity;
+  for (let i = 1; i < matrix.length; i++) {
+    for (let j = 1; j < matrix[i].length; j++) {
+      if (matrix[i][j] > maxValue) {
+        maxValue = matrix[i][j];
+      }
+    }
+  }
+
+  // Calcular la matriz de costos ajustada para minimización
+  const assignmentMatrix = [];
+  for (let i = 1; i < matrix.length; i++) {
+    const newRow = [];
+    for (let j = 1; j < matrix[i].length; j++) {
+      newRow.push(maxValue - matrix[i][j]);
+    }
+    assignmentMatrix.push(newRow);
+  }
+
+  // Aplicar el algoritmo de asignación (minimización)
+  const m = new Munkres();
+  const assignment = m.compute(assignmentMatrix);
+
+  // Imprimir la asignación
+  let respuesta = [];
+  let costoTotal = 0;
+  for (let i = 0; i < assignment.length; i++) {
+    const destination = rowHeaders[i];
+    const city = ` ${assignment[i][1] + 1}`;
+    const cost = maxValue - assignmentMatrix[i][assignment[i][1]];
+    console.log(`Asignar ${destination} a ${city} con un costo de ${cost}`);
+    respuesta.push( `Asignar ${destination} a ${city} con un costo de ${cost}`);
+    
+    costoTotal += cost;
+  }
+  respuesta.push( `Costo total: ${costoTotal}`);
+  console.log(respuesta);
+  respuestaAsignacion = respuesta;
+  console.log(respuestaAsignacion);
+  isResultadoAsignacionVisible.value = true;
+}
+
+
 /**prueba */
 
 function getAdjacencyMatrixWithoutHeaders() {
@@ -732,8 +932,13 @@ function getAdjacencyMatrixWithoutHeaders() {
       numbersAdjacencyMatrix[i - 1][j - 1] = adjacencyMatrix[i][j];
     }
   }
+  console.log(numbersAdjacencyMatrix);
 
   return numbersAdjacencyMatrix;
+}
+
+function hideResultadoAsignacion(){
+  isResultadoAsignacionVisible.value = false;
 }
 
 function johnson2() {
@@ -1050,6 +1255,7 @@ body {
 .modal3 .btn-control-panel,
 .modal4 .btn-control-panel,
 .modal6 .btn-control-panel,
+.modal7 .btn-control-panel,
 .modal5 .btn-control-panel {
   width: 50%;
   height: auto;
@@ -1149,6 +1355,21 @@ body {
   align-items: center;
   display: flex;
 }
+
+
+.modal7 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
 .modal-content {
   background-color: #fff;
   padding: 2.5%;
@@ -1164,6 +1385,7 @@ body {
 .modal3 .modal-content,
 .modal4 .modal-content,
 .modal6 .modal-content,
+.modal7 .modal-content,
 .modal5 .modal-content {
   /**  background-color: #fff;
  */
@@ -1198,6 +1420,7 @@ body {
 .modal3 .modal-content h3,
 .modal4 .modal-content h3,
 .modal6 .modal-content h3,
+.modal7 .modal-content h3,
 .modal5 .modal-content h3 {
   margin-top: -2%;
   font-size: 2.2rem;
@@ -1208,6 +1431,7 @@ body {
 .modal3 .modal-content input,
 .modal4 .modal-content input,
 .modal6 .modal-content input,
+.modal7 .modal-content input,
 .modal5 .modal-content input {
   height: auto;
   width: 50%;
@@ -1333,6 +1557,7 @@ body {
   .modal3 .modal-content,
   .modal4 .modal-content,
   .modal6 .modal-content,
+  .modal7 .modal-content,
   .modal5 .modal-content {
     /**  background-color: #fff;
  */
@@ -1344,6 +1569,7 @@ body {
   .modal3 .modal-content h3,
   .modal4 .modal-content h3,
   .modal6 .modal-content h3,
+  .modal7 .modal-content h3,
   .modal5 .modal-content h3 {
     font-size: 1.5rem;
     color: #c63637;
@@ -1353,6 +1579,7 @@ body {
   .modal3 .modal-content input,
   .modal4 .modal-content input,
   .modal6 .modal-content input,
+  .modal7 .modal-content input,
   .modal5 .modal-content input {
     margin-top: 0%;
     height: 7%;
