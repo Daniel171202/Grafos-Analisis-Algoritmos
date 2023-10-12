@@ -240,6 +240,15 @@
     </div>
   </div>
 
+  <div class="modal9" v-if="isResultadoNorthWestVisible">
+    <div class="modal-content">
+      <span class="close" @click="hideResultadoNorthWest()">&times;</span>
+      <h4 v-for="(linea, index) in respuestaNorthWest" :key="index">
+        {{ linea }}
+      </h4>
+    </div>
+  </div>
+
   <div class="modal8" v-if="isMatrixNorthWestModalVisible">
     <div class="modal-content">
       <span class="close" @click="hideMatrixNorthWestModal">&times;</span>
@@ -254,14 +263,39 @@
               {{ value }}
             </template>
           </td>
+          <!-- Mostrar oferta sólo si la suma de la fila no es 0 -->
+          <td v-if="rowIndex > 0 && row[row.length - 1] !== 0">
+            <input
+              type="number"
+              v-model="supplies[rowIndex - 1]"
+              placeholder="Oferta"
+            />
+          </td>
+        </tr>
+        <tr>
+          <!-- Mostrar demanda sólo si la suma de la columna no es 0 y no es la última columna -->
+          <td v-for="(value, colIndex) in adjacencyMatrix[0]" :key="colIndex">
+            <input
+              v-if="
+                colIndex > 0 &&
+                colIndex < adjacencyMatrix[0].length - 1 &&
+                getColumnSum(colIndex) !== 0
+              "
+              type="number"
+              v-model="demands[colIndex - 1]"
+              placeholder="Demanda"
+              style="width: 5vw"
+            />
+          </td>
         </tr>
       </table>
     </div>
+    <button @click="northWestMethod">Resolver Problema de Transporte</button>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref } from "vue";
+import { reactive, ref, toRefs } from "vue";
 import { useRouter } from "vue-router";
 import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
@@ -282,8 +316,23 @@ const isSelectionVisible = ref(false);
 const isSaveVisible = ref(false);
 const isUpdateVisible = ref(false);
 const isResultadoAsignacionVisible = ref(false);
+const isResultadoNorthWestVisible = ref(false);
+const respuestaNorthWest = ref([]);
+
 let creatingEdge = false;
 let startNode = null;
+
+/**PARA NORTHWEST */
+let suppliesReactive = reactive(new Array(adjacencyMatrix.length - 2).fill(0)); // Excluimos fila de encabezado y de sumas
+let demandsReactive = reactive(
+  new Array(adjacencyMatrix[0].length - 2).fill(0)
+); // Excluimos columna de encabezado y de sumas
+
+// Desestructurando las propiedades reactivas
+const { supplies, demands } = toRefs({
+  supplies: suppliesReactive,
+  demands: demandsReactive,
+});
 
 let graphOptions = [];
 
@@ -975,6 +1024,10 @@ function hideResultadoAsignacion() {
   isResultadoAsignacionVisible.value = false;
 }
 
+function hideResultadoNorthWest() {
+  isResultadoNorthWestVisible.value = false;
+}
+
 function johnson2() {
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   let numbersAdjacencyMatrix = getAdjacencyMatrixWithoutHeaders();
@@ -1150,6 +1203,88 @@ function johnson3() {
   // Retorna paths para que puedas usarlo donde lo necesites
   return paths;
 }
+
+//función método NorthWest para problema de transporte
+
+function getColumnSum(colIndex) {
+  let sum = 0;
+  for (let i = 1; i < adjacencyMatrix.length; i++) {
+    // Empezamos desde 1 para excluir el encabezado
+    sum += adjacencyMatrix[i][colIndex];
+  }
+  return sum;
+}
+
+function northWestMethod() {
+  let totalCost = 0;
+  let result = [];
+  let i = 0,
+    j = supplies.value.length;
+
+  console.log("Iniciando northWestMethod");
+
+  if (
+    !adjacencyMatrix ||
+    !adjacencyMatrix.length ||
+    !adjacencyMatrix[0].length
+  ) {
+    console.error("Datos de matriz no inicializados");
+    return;
+  }
+
+  console.log("Iniciando northWestMethod");
+  console.log("Supplies:", supplies.value);
+  console.log("Demands:", demands.value);
+  console.log("Matriz de adyacencia:", adjacencyMatrix);
+
+  // Corregimos el acceso a las propiedades .length aquí
+  while (i < supplies.value.length && j < demands.value.length) {
+    console.log(`Iteración actual: i=${i}, j=${j}`);
+    console.log(`supplies[${i}] = ${supplies.value[i]}`);
+    console.log(`demands[${j}] = ${demands.value[j]}`);
+
+    let qty = Math.min(supplies.value[i], demands.value[j]);
+    console.log(`Cantidad mínima determinada: ${qty}`);
+
+    supplies.value[i] -= qty;
+    demands.value[j] -= qty;
+    console.log(`Nuevo valor de supplies en índice ${i}: ${supplies.value[i]}`);
+    console.log(`Nuevo valor de demands en índice ${j}: ${demands.value[j]}`);
+
+    result.push({
+      source: adjacencyMatrix[i + 1][0],
+      destination: adjacencyMatrix[0][j + 1],
+      quantity: qty,
+      cost: adjacencyMatrix[i + 1][j + 1],
+    });
+    totalCost += qty * adjacencyMatrix[i + 1][j + 1];
+
+    console.log("Resultado parcial:", result);
+
+    if (supplies.value[i] === 0) {
+      console.log(`Supplies en índice ${i} es 0, incrementando i`);
+      i++;
+    }
+    if (demands.value[j] === 0) {
+      console.log(`Demands en índice ${j} es 0, incrementando j`);
+      j++;
+    }
+  }
+
+  console.log("Resultado final:", result);
+
+  respuestaNorthWest.value = result.map((entry) => {
+    return `De ${entry.source} a ${entry.destination}: ${entry.quantity} unidades con costo de ${entry.cost}`;
+  });
+
+  respuestaNorthWest.value.push(`Costo total de transporte: ${totalCost}`);
+
+  // Mostrar el modal
+  isResultadoNorthWestVisible.value = true;
+  isMatrixNorthWestModalVisible.value = false;
+
+  return result;
+}
 </script>
 
 <style scoped>
@@ -1291,7 +1426,8 @@ body {
 .modal6 .btn-control-panel,
 .modal7 .btn-control-panel,
 .modal5 .btn-control-panel,
-.modal8 .btn-control-panel {
+.modal8 .btn-control-panel,
+.modal9 .btn-control-panel {
   width: 50%;
   height: auto;
   margin: 2%;
@@ -1405,6 +1541,19 @@ body {
   display: flex;
 }
 
+.modal9 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
 .modal8 {
   display: none;
   position: fixed;
@@ -1435,7 +1584,8 @@ body {
 .modal6 .modal-content,
 .modal7 .modal-content,
 .modal5 .modal-content,
-.modal8 .modal-content {
+.modal8 .modal-content,
+.modal9 .modal-content {
   /**  background-color: #fff;
  */
   padding: 2.5%;
@@ -1471,7 +1621,8 @@ body {
 .modal6 .modal-content h3,
 .modal7 .modal-content h3,
 .modal5 .modal-content h3,
-.modal8 .modal-content h3 {
+.modal8 .modal-content h3,
+.modal9 .modal-content h3 {
   margin-top: -2%;
   font-size: 2.2rem;
   color: #c63637;
@@ -1483,7 +1634,8 @@ body {
 .modal6 .modal-content input,
 .modal7 .modal-content input,
 .modal5 .modal-content input,
-.modal8 .modal-content input {
+.modal8 .modal-content input,
+.modal9 .modal-content input {
   height: auto;
   width: 50%;
   font-size: 1rem;
@@ -1610,7 +1762,8 @@ body {
   .modal6 .modal-content,
   .modal7 .modal-content,
   .modal5 .modal-content,
-  .modal8 .modal-content {
+  .modal8 .modal-content,
+  .modal9 .modal-content {
     /**  background-color: #fff;
  */
     width: 90%;
@@ -1623,7 +1776,8 @@ body {
   .modal6 .modal-content h3,
   .modal7 .modal-content h3,
   .modal5 .modal-content h3,
-  .modal8 .modal-content h3 {
+  .modal8 .modal-content h3,
+  .modal9 .modal-content h3 {
     font-size: 1.5rem;
     color: #c63637;
   }
@@ -1634,7 +1788,8 @@ body {
   .modal6 .modal-content input,
   .modal7 .modal-content input,
   .modal5 .modal-content input,
-  .modal8 .modal-content input {
+  .modal8 .modal-content input,
+  .modal9 .modal-content input {
     margin-top: 0%;
     height: 7%;
     width: 75%;
