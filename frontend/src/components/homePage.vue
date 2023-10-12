@@ -48,6 +48,8 @@
         </div>
         <button class="help"  @click="redirectToDriveFile">Nesecitas ayuda?
         </button>
+        <button class="help"  @click="redirectToDriveFile1">Nesecitas ayuda con la asignación?
+        </button>
       </div>  
     </body>
   </div>
@@ -63,7 +65,14 @@ export default {
     redirectToDriveFile() {
       // Reemplaza 'URL_DEL_ARCHIVO_EN_GOOGLE_DRIVE' con el enlace público a tu archivo en Google Drive
       const driveFileUrl = 'https://drive.google.com/file/d/16xFKaWOGo6UIOXd1LE_dta-X-z87Ob5Y/view?usp=drive_link';
-
+      
+      // Abre el enlace en una nueva ventana o pestaña
+      window.open(driveFileUrl, '_blank');
+    },
+    redirectToDriveFile1(){
+      // Reemplaza 'URL_DEL_ARCHIVO_EN_GOOGLE_DRIVE' con el enlace público a tu archivo en Google Drive
+      const driveFileUrl = 'https://drive.google.com/file/d/1kFsLpXhDA4tWQszhebeCT-schWlhVvuB/view?usp=sharing';
+      
       // Abre el enlace en una nueva ventana o pestaña
       window.open(driveFileUrl, '_blank');
     },

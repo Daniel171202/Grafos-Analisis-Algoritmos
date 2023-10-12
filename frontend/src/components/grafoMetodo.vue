@@ -25,7 +25,8 @@
           <button @click="addEdge">Conectar nodos</button>
           <button @click="removeEdge">Eliminar conexión</button>
         </div>
-
+        <button class="help"  @click="redirectToDriveFile">Nesecitas ayuda?
+        </button>
         <button @click="resolveAssignment">Resolver asignación</button>
       </div>
     </div>
@@ -53,7 +54,6 @@ const selectedEdges = ref([]);
 const showSidebar = ref(false);
 const currentCost = ref("");
 const currentNodeName = ref("");
-
 function toggleSidebar() {
   console.log("Toggling sidebar"); // Añade esto para diagnóstico
   showSidebar.value = !showSidebar.value;
