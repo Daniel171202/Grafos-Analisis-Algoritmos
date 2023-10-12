@@ -81,6 +81,9 @@
           <button @click="usoAsignacionMax" class="btn-control-panel">
             Solucionar Algoritmo de Asignación Maximizacion
           </button>
+          <button @click="showMatrixNorthWestModal" class="btn-control-panel">
+            Método North West
+          </button>
         </div>
       </div>
     </div>
@@ -225,12 +228,35 @@
   </div>
 
   <div class="modal7" v-if="isResultadoAsignacionVisible">
-      <div class="modal-content">
-        <span class="close" @click="hideResultadoAsignacion()">&times;</span>
-        <h4 style="font-size: 1.5rem; " v-for="linea in respuestaAsignacion" :key="linea"> {{ linea }}</h4>
-        
-      </div>
-  
+    <div class="modal-content">
+      <span class="close" @click="hideResultadoAsignacion()">&times;</span>
+      <h4
+        style="font-size: 1.5rem"
+        v-for="linea in respuestaAsignacion"
+        :key="linea"
+      >
+        {{ linea }}
+      </h4>
+    </div>
+  </div>
+
+  <div class="modal8" v-if="isMatrixNorthWestModalVisible">
+    <div class="modal-content">
+      <span class="close" @click="hideMatrixNorthWestModal">&times;</span>
+      <h3>Matriz de Adyacencia:</h3>
+      <table class="adjacency-matrix">
+        <tr v-for="(row, rowIndex) in adjacencyMatrix" :key="rowIndex">
+          <td v-for="(value, colIndex) in row" :key="colIndex">
+            <template v-if="rowIndex === 0 || colIndex === 0">
+              <th>{{ value }}</th>
+            </template>
+            <template v-else>
+              {{ value }}
+            </template>
+          </td>
+        </tr>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -241,7 +267,7 @@ import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
 import axios from "axios";
-import {Munkres } from 'munkres-js';
+import { Munkres } from "munkres-js";
 
 let nodes = reactive({ ...data.nodes });
 let edges = reactive({ ...data.edges });
@@ -249,6 +275,7 @@ let paths = reactive({ ...data.paths });
 
 var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
+const isMatrixNorthWestModalVisible = ref(false);
 const isNodoModalVisible = ref(false);
 const isEdgeModalVisible = ref(false);
 const isSelectionVisible = ref(false);
@@ -345,8 +372,17 @@ function showMatrixModal() {
   isMatrixModalVisible.value = true;
 }
 
+function showMatrixNorthWestModal() {
+  adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+  isMatrixNorthWestModalVisible.value = true;
+}
+
 function hideMatrixModal() {
   isMatrixModalVisible.value = false;
+}
+
+function hideMatrixNorthWestModal() {
+  isMatrixNorthWestModalVisible.value = false;
 }
 
 function showNodoModal() {
@@ -672,8 +708,7 @@ function createAdjacencyMatrix(nodes, edges) {
 function nameofEdge(edge) {
   const label = edge.label !== null ? edge.label : "";
   const cost = edge.cost !== null ? edge.cost : "";
-  const aux =
-    label || cost ? `${label && cost ? " " : ""}${cost}` : " ";
+  const aux = label || cost ? `${label && cost ? " " : ""}${cost}` : " ";
   return aux;
 }
 
@@ -736,11 +771,9 @@ function johnson() {
 
 /**fin función de Johnson */
 
+// Algoritmo de asignación
 
-
-  // Algoritmo de asignación
-
-  function hungarianAlgorithm(matrix) {
+function hungarianAlgorithm(matrix) {
   const numRows = matrix.length;
   const numCols = matrix[0].length;
 
@@ -754,7 +787,7 @@ function johnson() {
 
   // Paso 2: Reducir las columnas
   for (let j = 0; j < numCols; j++) {
-    const minInColumn = Math.min(...matrix.map(row => row[j]));
+    const minInColumn = Math.min(...matrix.map((row) => row[j]));
     for (let i = 0; i < numRows; i++) {
       matrix[i][j] -= minInColumn;
     }
@@ -777,8 +810,12 @@ function johnson() {
   }
 
   // Paso 3: Buscar ceros sin asignar
-  const unassignedRows = assignedRows.map((assigned, index) => !assigned ? index : -1).filter(index => index !== -1);
-  const unassignedCols = assignedCols.map((assigned, index) => !assigned ? index : -1).filter(index => index !== -1);
+  const unassignedRows = assignedRows
+    .map((assigned, index) => (!assigned ? index : -1))
+    .filter((index) => index !== -1);
+  const unassignedCols = assignedCols
+    .map((assigned, index) => (!assigned ? index : -1))
+    .filter((index) => index !== -1);
 
   while (unassignedCols.length > 0) {
     let row = -1;
@@ -819,7 +856,7 @@ function usoAsignacion() {
   const originalMatrix = adjacencyMatrix;
 
   // Obtener una matriz 3x3 reducida
-  const rowHeaders = originalMatrix.slice(1, 4).map(row => row[0]);
+  const rowHeaders = originalMatrix.slice(1, 4).map((row) => row[0]);
 
   // Obtener una matriz 3x3 reducida con encabezados y títulos de fila
   const matrix = [];
@@ -835,7 +872,7 @@ function usoAsignacion() {
 
   // Aplicar el algoritmo de asignación (máximización)
   let m = new Munkres();
-  let indices = m.compute(matrix.slice(1).map(row => row.slice(1)));
+  let indices = m.compute(matrix.slice(1).map((row) => row.slice(1)));
 
   // Imprimir la asignación en el formato deseado
   let respuesta = [];
@@ -845,23 +882,21 @@ function usoAsignacion() {
     const city = ` ${indices[i][1] + 1}`;
     const cost = matrix[indices[i][0] + 1][indices[i][1] + 1];
     console.log(`Asignar ${destination} a ${city} con un costo de ${cost}`);
-    respuesta.push( `Asignar ${destination} a ${city} con un costo de ${cost}`);
+    respuesta.push(`Asignar ${destination} a ${city} con un costo de ${cost}`);
     costoTotal += cost;
-
   }
-  respuesta.push( `Costo total: ${costoTotal}`);
+  respuesta.push(`Costo total: ${costoTotal}`);
   console.log(respuesta);
   respuestaAsignacion = respuesta;
   console.log(respuestaAsignacion);
   isResultadoAsignacionVisible.value = true;
 }
 
-
 function usoAsignacionMax() {
   const originalMatrix = adjacencyMatrix;
 
   // Obtener una matriz 3x3 reducida
-  const rowHeaders = originalMatrix.slice(1, 4).map(row => row[0]);
+  const rowHeaders = originalMatrix.slice(1, 4).map((row) => row[0]);
 
   // Obtener una matriz 3x3 reducida con encabezados y títulos de fila
   const matrix = [];
@@ -907,17 +942,16 @@ function usoAsignacionMax() {
     const city = ` ${assignment[i][1] + 1}`;
     const cost = maxValue - assignmentMatrix[i][assignment[i][1]];
     console.log(`Asignar ${destination} a ${city} con un costo de ${cost}`);
-    respuesta.push( `Asignar ${destination} a ${city} con un costo de ${cost}`);
-    
+    respuesta.push(`Asignar ${destination} a ${city} con un costo de ${cost}`);
+
     costoTotal += cost;
   }
-  respuesta.push( `Costo total: ${costoTotal}`);
+  respuesta.push(`Costo total: ${costoTotal}`);
   console.log(respuesta);
   respuestaAsignacion = respuesta;
   console.log(respuestaAsignacion);
   isResultadoAsignacionVisible.value = true;
 }
-
 
 /**prueba */
 
@@ -937,7 +971,7 @@ function getAdjacencyMatrixWithoutHeaders() {
   return numbersAdjacencyMatrix;
 }
 
-function hideResultadoAsignacion(){
+function hideResultadoAsignacion() {
   isResultadoAsignacionVisible.value = false;
 }
 
@@ -1256,7 +1290,8 @@ body {
 .modal4 .btn-control-panel,
 .modal6 .btn-control-panel,
 .modal7 .btn-control-panel,
-.modal5 .btn-control-panel {
+.modal5 .btn-control-panel,
+.modal8 .btn-control-panel {
   width: 50%;
   height: auto;
   margin: 2%;
@@ -1356,8 +1391,21 @@ body {
   display: flex;
 }
 
-
 .modal7 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.modal8 {
   display: none;
   position: fixed;
   z-index: 1;
@@ -1386,7 +1434,8 @@ body {
 .modal4 .modal-content,
 .modal6 .modal-content,
 .modal7 .modal-content,
-.modal5 .modal-content {
+.modal5 .modal-content,
+.modal8 .modal-content {
   /**  background-color: #fff;
  */
   padding: 2.5%;
@@ -1421,7 +1470,8 @@ body {
 .modal4 .modal-content h3,
 .modal6 .modal-content h3,
 .modal7 .modal-content h3,
-.modal5 .modal-content h3 {
+.modal5 .modal-content h3,
+.modal8 .modal-content h3 {
   margin-top: -2%;
   font-size: 2.2rem;
   color: #c63637;
@@ -1432,7 +1482,8 @@ body {
 .modal4 .modal-content input,
 .modal6 .modal-content input,
 .modal7 .modal-content input,
-.modal5 .modal-content input {
+.modal5 .modal-content input,
+.modal8 .modal-content input {
   height: auto;
   width: 50%;
   font-size: 1rem;
@@ -1558,7 +1609,8 @@ body {
   .modal4 .modal-content,
   .modal6 .modal-content,
   .modal7 .modal-content,
-  .modal5 .modal-content {
+  .modal5 .modal-content,
+  .modal8 .modal-content {
     /**  background-color: #fff;
  */
     width: 90%;
@@ -1570,7 +1622,8 @@ body {
   .modal4 .modal-content h3,
   .modal6 .modal-content h3,
   .modal7 .modal-content h3,
-  .modal5 .modal-content h3 {
+  .modal5 .modal-content h3,
+  .modal8 .modal-content h3 {
     font-size: 1.5rem;
     color: #c63637;
   }
@@ -1580,7 +1633,8 @@ body {
   .modal4 .modal-content input,
   .modal6 .modal-content input,
   .modal7 .modal-content input,
-  .modal5 .modal-content input {
+  .modal5 .modal-content input,
+  .modal8 .modal-content input {
     margin-top: 0%;
     height: 7%;
     width: 75%;

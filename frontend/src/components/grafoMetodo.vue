@@ -80,7 +80,7 @@
         class="network-graph"
         :nodes="graphNodes"
         :edges="graphEdges"
-      ></v-network-graph>
+      />
     </section>
   </div>
 </template>
@@ -116,7 +116,7 @@ export default {
       );
     },
     graphNodes() {
-      return [
+      const nodes = [
         ...this.leftNodes.map((node) => ({
           id: String(node.id),
           label: node.name,
@@ -126,37 +126,49 @@ export default {
           label: node.name,
         })),
       ];
+      console.log("Nodos para el gráfico:", nodes);
+      return nodes;
     },
 
     graphEdges() {
-      return this.connections.map((conn) => ({
+      const edges = this.connections.map((conn) => ({
         from: String(conn.from),
         to: String(conn.to),
         label: String(conn.weight),
       }));
+      console.log("Aristas para el gráfico:", edges);
+      return edges;
     },
   },
   methods: {
     addNode() {
       if (!this.nodeName) return;
-
+      let newNode = { id: this.nodeCounter++, name: this.nodeName };
       if (this.nodeSide === "left") {
-        this.leftNodes.push({ id: this.nodeCounter++, name: this.nodeName });
+        this.leftNodes = [...this.leftNodes, newNode];
       } else {
-        this.rightNodes.push({ id: this.nodeCounter++, name: this.nodeName });
+        this.rightNodes = [...this.rightNodes, newNode];
       }
+      console.log("Nodo agregado:", newNode);
+      console.log("Nodos de la izquierda:", this.leftNodes);
+      console.log("Nodos de la derecha:", this.rightNodes);
       this.nodeName = "";
     },
 
     addConnection() {
       if (!this.canAddConnection) return;
 
-      this.connections.push({
+      let newConnection = {
         id: this.connectionCounter++,
         from: this.selectedLeftNode,
         to: this.selectedRightNode,
         weight: parseFloat(this.connectionWeight),
-      });
+      };
+      this.connections = [...this.connections, newConnection];
+
+      console.log("Conexión agregada:", newConnection);
+      console.log("Conexiones totales:", this.connections);
+
       this.selectedLeftNode = null;
       this.selectedRightNode = null;
       this.connectionWeight = null;
@@ -185,6 +197,7 @@ export default {
 
     solveAssignmentProblem() {
       let costMatrix = this.generateCostMatrix();
+      console.log(costMatrix);
       let m = new Munkres();
       let indexes = m.compute(costMatrix);
 
