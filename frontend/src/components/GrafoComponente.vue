@@ -1337,8 +1337,8 @@ const resolver = async () => {
       for (let j = 0; j < decisiones[i].length; j++) {
         if (decisiones[i][j] > 0) {
           decisionesProcesadas.push({
-            source: `Origen ${i + 1}`,
-            destination: `Destino ${j + 1}`,
+            source: adjacencyMatrix[i + 1][0], // Usando los nombres de la matriz de adyacencia
+            destination: adjacencyMatrix[0][j + 1], // Usando los nombres de la matriz de adyacencia
             quantity: decisiones[i][j],
             cost: costos.value[i][j],
           });
@@ -1664,7 +1664,7 @@ body {
   padding: 2.5%;
   border: 1px solid #888;
   width: 50%;
-  height: 25%;
+  height: auto;
   border-radius: 25px;
   position: relative;
   text-align: center;
