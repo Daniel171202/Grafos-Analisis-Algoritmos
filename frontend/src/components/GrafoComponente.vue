@@ -243,7 +243,7 @@
   <div class="modal9" v-if="isResultadoNorthWestVisible">
     <div class="modal-content">
       <span class="close" @click="hideResultadoNorthWest()">&times;</span>
-      <h4 v-for="(linea, index) in respuestaNorthWest" :key="index">
+      <h4 v-for="(linea, index) in respuestaNorthWestSolve" :key="index">
         {{ linea }}
       </h4>
     </div>
@@ -291,6 +291,8 @@
       </table>
     </div>
     <button @click="northWestMethod">Resolver Problema de Transporte</button>
+    <!--<button @click="northWestMethod">Resolver Problema de Transporte</button>
+    -->
   </div>
 </template>
 
@@ -318,6 +320,10 @@ const isUpdateVisible = ref(false);
 const isResultadoAsignacionVisible = ref(false);
 const isResultadoNorthWestVisible = ref(false);
 const respuestaNorthWest = ref([]);
+
+/**problem grafos */
+const solucion = ref([]);
+const costoTotal = ref(0);
 
 let creatingEdge = false;
 let startNode = null;
@@ -1232,6 +1238,22 @@ function northWestMethod() {
     return;
   }
 
+  const extractedCosts = [];
+  for (let i = 1; i < adjacencyMatrix.length; i++) {
+    const row = [];
+    for (let j = 1; j < adjacencyMatrix[i].length; j++) {
+      row.push(adjacencyMatrix[i][j]);
+    }
+    extractedCosts.push(row);
+  }
+  const extractedSupplies = [...supplies.value];
+  const extractedDemands = [...demands.value];
+
+  // Paso 2: Actualizar referencias en Vue
+  costos.value = extractedCosts;
+  oferta.value = extractedSupplies;
+  demanda.value = extractedDemands;
+
   console.log("Iniciando northWestMethod");
   console.log("Supplies:", supplies.value);
   console.log("Demands:", demands.value);
@@ -1283,8 +1305,59 @@ function northWestMethod() {
   isResultadoNorthWestVisible.value = true;
   isMatrixNorthWestModalVisible.value = false;
 
+  // Paso 3: Llamada a resolver
+  resolver();
+
   return result;
 }
+
+//Funciones de complemento
+
+const costos = ref([]);
+const oferta = ref([]);
+const demanda = ref([]);
+const result = ref({});
+
+const respuestaNorthWestSolve = ref([]);
+
+const resolver = async () => {
+  const url = "http://localhost:8080/optimizar_transporte";
+
+  try {
+    const response = await axios.post(url, {
+      costos: costos.value,
+      oferta: oferta.value,
+      demanda: demanda.value,
+    });
+
+    const decisionesProcesadas = [];
+    const decisiones = response.data.decisiones;
+
+    for (let i = 0; i < decisiones.length; i++) {
+      for (let j = 0; j < decisiones[i].length; j++) {
+        if (decisiones[i][j] > 0) {
+          decisionesProcesadas.push({
+            source: `Origen ${i + 1}`,
+            destination: `Destino ${j + 1}`,
+            quantity: decisiones[i][j],
+            cost: costos.value[i][j],
+          });
+        }
+      }
+    }
+
+    respuestaNorthWestSolve.value = decisionesProcesadas.map((decision) => {
+      return `De ${decision.source} a ${decision.destination}: ${decision.quantity} unidades con costo de ${decision.cost}`;
+    });
+
+    respuestaNorthWestSolve.value.push(
+      `Costo total de transporte: ${response.data.costo_total}`
+    );
+    console.log(response.data);
+  } catch (error) {
+    console.error("Hubo un error al enviar la solicitud:", error);
+  }
+};
 </script>
 
 <style scoped>

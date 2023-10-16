@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+/**import db from "../config/database.js";
 
 // Get all grafos
 export const getGrafosModel = (idUsuario, result) => {
@@ -86,4 +86,4 @@ export const updateGrafoModel = (idGrafo, grafo, result) => {
         console.log("Grafo actualizado: ", { idGrafo: idGrafo, ...grafo });
         result(null, { idGrafo: idGrafo, ...grafo });
     });
-}
+} */
