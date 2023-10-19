@@ -301,7 +301,7 @@
       <span class="close" @click="hideMatrixModalNorthWest">&times;</span>
       <h3>Matriz de Adyacencia:</h3>
       <table class="adjacency-matrix">
-        <tr v-for="(row, rowIndex) in adjacencyMatrix" :key="rowIndex">
+        <tr v-for="(row, rowIndex) in resultMatrix" :key="rowIndex">
           <td v-for="(value, colIndex) in row" :key="colIndex">
             <template v-if="rowIndex === 0 || colIndex === 0">
               <th>{{ value }}</th>
@@ -1331,8 +1331,8 @@ function northWestMethod() {
   respuestaNorthWest.value.push(`Costo total de transporte: ${totalCost}`);
 
   // Mostrar el modal
-  isMatrixModalVisibleNorthWest.value = true;
-  isResultadoNorthWestVisible.value = false;
+  isMatrixModalVisibleNorthWest.value = false;
+  isResultadoNorthWestVisible.value = true;
   isMatrixNorthWestModalVisible.value = false;
 
   // Paso 3: Llamada a resolver

@@ -38,6 +38,11 @@
               ><i class="fas fa-cogs fa-bounce"></i><a> Ir a Grafos</a></span
             >
           </button>
+          <button class="opciones col-md-4" @click="goToPage('/Sorts')">
+            <span class="move"
+              ><i class="fas fa-cogs fa-bounce"></i><a> Ir a Sorts</a></span
+            >
+          </button>
           <!--<button class="opciones col-md-4" @click="goToPage('/Asignación')">
             <span class="move"
               ><i class="fas fa-th fa-bounce"></i
