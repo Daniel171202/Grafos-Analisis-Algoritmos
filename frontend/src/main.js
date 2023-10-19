@@ -8,6 +8,7 @@ import "v-network-graph/lib/style.css";
 import GrafoComponente from "./components/GrafoComponente.vue";
 import HomePage from "./components/homePage.vue";
 import Asignacion from "./components/grafoMetodo.vue";
+import Sorts from "./components/sortsPage.vue";
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     name: "Asignación",
     path: "/Asignación",
     component: Asignacion,
+  },
+  {
+    name: "Sorts",
+    path: "/Sorts",
+    component: Sorts,
   },
 ];
 const router = createRouter({

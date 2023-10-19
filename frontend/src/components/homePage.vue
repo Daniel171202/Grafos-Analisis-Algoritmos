@@ -29,7 +29,6 @@
         <nav-bar></nav-bar>
 
     </div>-->
-
     <body>
       <div class="home container">
         <h1>Bienvenido a la Página de Algoritmos</h1>

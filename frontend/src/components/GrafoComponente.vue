@@ -147,7 +147,8 @@
         <h3>Nombre Conexión:</h3>
         <label>Nombre:</label>
         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
-        <input type="text" v-model="edges[actualEdgeIndex].label" />
+        <!--<input type="text" v-model="edges[actualEdgeIndex].label" />
+        -->
         <br />
         <label>Peso: </label>
         <input type="number" v-model="edges[actualEdgeIndex].cost" />
@@ -294,6 +295,25 @@
     <!--<button @click="northWestMethod">Resolver Problema de Transporte</button>
     -->
   </div>
+
+  <div class="modal10" v-if="isMatrixModalVisibleNorthWest">
+    <div class="modal-content">
+      <span class="close" @click="hideMatrixModalNorthWest">&times;</span>
+      <h3>Matriz de Adyacencia:</h3>
+      <table class="adjacency-matrix">
+        <tr v-for="(row, rowIndex) in adjacencyMatrix" :key="rowIndex">
+          <td v-for="(value, colIndex) in row" :key="colIndex">
+            <template v-if="rowIndex === 0 || colIndex === 0">
+              <th>{{ value }}</th>
+            </template>
+            <template v-else>
+              {{ value }}
+            </template>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -311,6 +331,7 @@ let paths = reactive({ ...data.paths });
 
 var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
+const isMatrixModalVisibleNorthWest = ref(false);
 const isMatrixNorthWestModalVisible = ref(false);
 const isNodoModalVisible = ref(false);
 const isEdgeModalVisible = ref(false);
@@ -427,6 +448,10 @@ function showMatrixModal() {
   isMatrixModalVisible.value = true;
 }
 
+function showMatrixModalNorthWest() {
+  isMatrixModalVisibleNorthWest.value = true;
+}
+
 function showMatrixNorthWestModal() {
   adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   isMatrixNorthWestModalVisible.value = true;
@@ -438,6 +463,10 @@ function hideMatrixModal() {
 
 function hideMatrixNorthWestModal() {
   isMatrixNorthWestModalVisible.value = false;
+}
+
+function hideMatrixModalNorthWest() {
+  isMatrixModalVisibleNorthWest.value = false;
 }
 
 function showNodoModal() {
@@ -1302,7 +1331,8 @@ function northWestMethod() {
   respuestaNorthWest.value.push(`Costo total de transporte: ${totalCost}`);
 
   // Mostrar el modal
-  isResultadoNorthWestVisible.value = true;
+  isMatrixModalVisibleNorthWest.value = true;
+  isResultadoNorthWestVisible.value = false;
   isMatrixNorthWestModalVisible.value = false;
 
   // Paso 3: Llamada a resolver
@@ -1500,7 +1530,8 @@ body {
 .modal7 .btn-control-panel,
 .modal5 .btn-control-panel,
 .modal8 .btn-control-panel,
-.modal9 .btn-control-panel {
+.modal9 .btn-control-panel,
+.modal10 .btn-control-panel {
   width: 50%;
   height: auto;
   margin: 2%;
@@ -1520,6 +1551,20 @@ body {
 }
 
 .modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.modal10 {
   display: none;
   position: fixed;
   z-index: 1;
@@ -1658,7 +1703,8 @@ body {
 .modal7 .modal-content,
 .modal5 .modal-content,
 .modal8 .modal-content,
-.modal9 .modal-content {
+.modal9 .modal-content,
+.modal10 .modal-content {
   /**  background-color: #fff;
  */
   padding: 2.5%;
@@ -1695,7 +1741,8 @@ body {
 .modal7 .modal-content h3,
 .modal5 .modal-content h3,
 .modal8 .modal-content h3,
-.modal9 .modal-content h3 {
+.modal9 .modal-content h3,
+.modal10 .modal-content h3 {
   margin-top: -2%;
   font-size: 2.2rem;
   color: #c63637;
@@ -1708,7 +1755,8 @@ body {
 .modal7 .modal-content input,
 .modal5 .modal-content input,
 .modal8 .modal-content input,
-.modal9 .modal-content input {
+.modal9 .modal-content input,
+.modal10 .modal-content input {
   height: auto;
   width: 50%;
   font-size: 1rem;
@@ -1836,7 +1884,8 @@ body {
   .modal7 .modal-content,
   .modal5 .modal-content,
   .modal8 .modal-content,
-  .modal9 .modal-content {
+  .modal9 .modal-content,
+  .modal10 .modal-content {
     /**  background-color: #fff;
  */
     width: 90%;
@@ -1850,7 +1899,8 @@ body {
   .modal7 .modal-content h3,
   .modal5 .modal-content h3,
   .modal8 .modal-content h3,
-  .modal9 .modal-content h3 {
+  .modal9 .modal-content h3,
+  .modal10 .modal-content h3 {
     font-size: 1.5rem;
     color: #c63637;
   }
@@ -1862,7 +1912,8 @@ body {
   .modal7 .modal-content input,
   .modal5 .modal-content input,
   .modal8 .modal-content input,
-  .modal9 .modal-content input {
+  .modal9 .modal-content input,
+  .modal10 .modal-content input {
     margin-top: 0%;
     height: 7%;
     width: 75%;
