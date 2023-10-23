@@ -7,7 +7,6 @@ const db = mysql.createConnection({
   password: "12345678",
   database: "proyecto_grafos",
   //database: "feria_del_empleo_pruebas",
-
 });
 
 function handleDisconnect() {

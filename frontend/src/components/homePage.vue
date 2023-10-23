@@ -29,7 +29,6 @@
         <nav-bar></nav-bar>
 
     </div>-->
-
     <body>
       <div class="home container">
         <h1>Bienvenido a la Página de Algoritmos</h1>
@@ -39,18 +38,25 @@
               ><i class="fas fa-cogs fa-bounce"></i><a> Ir a Grafos</a></span
             >
           </button>
-          <button class="opciones col-md-4" @click="goToPage('/Asignación')">
+          <button class="opciones col-md-4" @click="goToPage('/Sorts')">
+            <span class="move"
+              ><i class="fas fa-cogs fa-bounce"></i><a> Ir a Sorts</a></span
+            >
+          </button>
+          <!--<button class="opciones col-md-4" @click="goToPage('/Asignación')">
             <span class="move"
               ><i class="fas fa-th fa-bounce"></i
               ><a> Ir a Algoritmo de Asignación</a></span
             >
-          </button>
+          </button>-->
         </div>
-        <button class="help"  @click="redirectToDriveFile">Nesecitas ayuda?
+        <button class="help" @click="redirectToDriveFile">
+          Nesecitas ayuda?
         </button>
-        <button class="help"  @click="redirectToDriveFile1">Nesecitas ayuda con la asignación?
+        <button class="help" @click="redirectToDriveFile1">
+          Nesecitas ayuda con la asignación?
         </button>
-      </div>  
+      </div>
     </body>
   </div>
 </template>
@@ -64,17 +70,19 @@ export default {
   methods: {
     redirectToDriveFile() {
       // Reemplaza 'URL_DEL_ARCHIVO_EN_GOOGLE_DRIVE' con el enlace público a tu archivo en Google Drive
-      const driveFileUrl = 'https://drive.google.com/file/d/16xFKaWOGo6UIOXd1LE_dta-X-z87Ob5Y/view?usp=drive_link';
-      
+      const driveFileUrl =
+        "https://drive.google.com/file/d/16xFKaWOGo6UIOXd1LE_dta-X-z87Ob5Y/view?usp=drive_link";
+
       // Abre el enlace en una nueva ventana o pestaña
-      window.open(driveFileUrl, '_blank');
+      window.open(driveFileUrl, "_blank");
     },
-    redirectToDriveFile1(){
+    redirectToDriveFile1() {
       // Reemplaza 'URL_DEL_ARCHIVO_EN_GOOGLE_DRIVE' con el enlace público a tu archivo en Google Drive
-      const driveFileUrl = 'https://drive.google.com/file/d/1kFsLpXhDA4tWQszhebeCT-schWlhVvuB/view?usp=sharing';
-      
+      const driveFileUrl =
+        "https://drive.google.com/file/d/1kFsLpXhDA4tWQszhebeCT-schWlhVvuB/view?usp=sharing";
+
       // Abre el enlace en una nueva ventana o pestaña
-      window.open(driveFileUrl, '_blank');
+      window.open(driveFileUrl, "_blank");
     },
     goToPage(route) {
       this.$router.push(route);
@@ -166,13 +174,12 @@ body {
     font-size: 1.5rem;
     border-radius: 20px;
   }
-   .help {
-  background-color: #2ecc71; 
-  font-size: 1.5rem;
-  border: none;
-  border-radius: 20px;
-  padding: 5px;
-
-}
+  .help {
+    background-color: #2ecc71;
+    font-size: 1.5rem;
+    border: none;
+    border-radius: 20px;
+    padding: 5px;
+  }
 }
 </style>
