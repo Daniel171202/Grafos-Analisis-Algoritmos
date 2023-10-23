@@ -1,9 +1,8 @@
-/**import {
+import {
   getGrafosModel,
   createGrafoModel,
   updateGrafoModel,
 } from "../models/grafosModel.js";
-
 
 export const getGrafos = (req, res) => {
   getGrafosModel(req.params.idUsuario, (err, data) => {
@@ -40,4 +39,3 @@ export const updateGrafo = (req, res) => {
     }
   });
 };
- */

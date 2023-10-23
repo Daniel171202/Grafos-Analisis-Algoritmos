@@ -13,7 +13,8 @@
           Insertion Sort
         </button>
         <button class="button-52" @click="mergeSortInit()">Merge Sort</button>
-        <button class="button-52" @click="quickSortInit()">Quick Sort</button>
+        <!--        <button class="button-52" @click="quickSortInit()">Quick Sort</button>
+-->
         <button class="button-52" @click="fillArray()">Mezclar</button>
         <button class="button-52" @click="volver()">Volver</button>
       </div>
@@ -255,7 +256,7 @@ export default {
       this.$router.push("/");
     },
     sleep() {
-      return new Promise((resolve) => setTimeout(resolve, 100));
+      return new Promise((resolve) => setTimeout(resolve, 5));
     },
   },
   created() {

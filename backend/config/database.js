@@ -1,4 +1,4 @@
-/**import mysql from "mysql2";
+import mysql from "mysql2";
 
 // create the connection to database
 const db = mysql.createConnection({
@@ -7,7 +7,6 @@ const db = mysql.createConnection({
   password: "12345678",
   database: "proyecto_grafos",
   //database: "feria_del_empleo_pruebas",
-
 });
 
 function handleDisconnect() {
@@ -30,4 +29,3 @@ function handleDisconnect() {
 
 handleDisconnect();
 export default db;
- */
