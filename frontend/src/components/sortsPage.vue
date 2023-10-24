@@ -13,8 +13,8 @@
           Insertion Sort
         </button>
         <button class="button-52" @click="mergeSortInit()">Merge Sort</button>
-        <!--        <button class="button-52" @click="quickSortInit()">Quick Sort</button>
--->
+        <button class="button-52" @click="quickSortInit()">Quick Sort</button>
+
         <button class="button-52" @click="fillArray()">Mezclar</button>
         <button class="button-52" @click="volver()">Volver</button>
       </div>
@@ -280,6 +280,8 @@ export default {
         if (arr[j] < pivot) {
           i++;
           [arr[i], arr[j]] = [arr[j], arr[i]]; // swap elements
+          this.playNote(100+this.array[i]*1);
+
           await this.sleep();
         }
       }
