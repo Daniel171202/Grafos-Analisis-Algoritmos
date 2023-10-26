@@ -13,8 +13,8 @@
           Insertion Sort
         </button>
         <button class="button-52" @click="mergeSortInit()">Merge Sort</button>
-        <!--        <button class="button-52" @click="quickSortInit()">Quick Sort</button>
--->
+        <button class="button-52" @click="quickSortInit()">Quick Sort</button>
+
         <button class="button-52" @click="fillArray()">Mezclar</button>
         <button class="button-52" @click="volver()">Volver</button>
       </div>
@@ -51,10 +51,38 @@ export default {
       start_time: 0,
       elapsed_time: "0.00s",
       timer: null,
+      audioCtx : null,
     };
   },
   components: {},
   methods: {
+
+
+    playNote(freq){
+      if(this.audioCtx==null){
+        /* eslint-disable no-undef */
+
+          this.audioCtx=new(
+              AudioContext || 
+              webkitAudioContext || 
+              window.webkitAudioContext
+          )();
+          /* eslint-disable no-undef */
+
+      }
+      const dur=0.1;
+      const osc=this.audioCtx.createOscillator();
+      osc.frequency.value=freq;
+      osc.start();
+      osc.stop(this.audioCtx.currentTime+dur);
+      const node=this.audioCtx.createGain();
+      node.gain.value=0.1;
+      node.gain.linearRampToValueAtTime(
+          0, this.audioCtx.currentTime+dur
+      );
+      osc.connect(node);
+      node.connect(this.audioCtx.destination);
+  },
     startTimer() {
       this.timer = setInterval(() => {
         let current_time = Date.now();
@@ -99,6 +127,7 @@ export default {
             this.array[i] = this.array[i + 1];
             this.array[i + 1] = tmp;
             // sleep - to visualize / see the changes
+            this.playNote(200+this.array[i]*100);
             await this.sleep();
             checked = true;
           }
@@ -125,6 +154,8 @@ export default {
           let tmp = this.array[i];
           this.array[i] = this.array[min];
           this.array[min] = tmp;
+          this.playNote(200+this.array[i]*10);
+
           await this.sleep(); // para visualizar los cambios
         }
       }
@@ -144,8 +175,11 @@ export default {
         while (j >= 0 && this.array[j] > key) {
           this.array[j + 1] = this.array[j];
           j = j - 1;
+
           await this.sleep(); // para visualizar los cambios
         }
+        this.playNote(200+this.array[i]*10);
+
         this.array[j + 1] = key;
       }
       let end_time = Date.now();
@@ -198,6 +232,8 @@ export default {
           j++;
         }
         k++;
+        this.playNote(200+this.array[k]*5);
+
         await this.sleep();
       }
 
@@ -244,6 +280,8 @@ export default {
         if (arr[j] < pivot) {
           i++;
           [arr[i], arr[j]] = [arr[j], arr[i]]; // swap elements
+          this.playNote(100+this.array[i]*1);
+
           await this.sleep();
         }
       }
