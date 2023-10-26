@@ -341,6 +341,7 @@ const isUpdateVisible = ref(false);
 const isResultadoAsignacionVisible = ref(false);
 const isResultadoNorthWestVisible = ref(false);
 const respuestaNorthWest = ref([]);
+const resultMatrix = ref([]);
 
 /**problem grafos */
 const solucion = ref([]);
@@ -1331,12 +1332,13 @@ function northWestMethod() {
   respuestaNorthWest.value.push(`Costo total de transporte: ${totalCost}`);
 
   // Mostrar el modal
-  isMatrixModalVisibleNorthWest.value = false;
-  isResultadoNorthWestVisible.value = true;
+
+  isResultadoNorthWestVisible.value = false;
   isMatrixNorthWestModalVisible.value = false;
 
   // Paso 3: Llamada a resolver
   resolver();
+  //isMatrixModalVisibleNorthWest.value = true;
 
   return result;
 }
@@ -1362,6 +1364,15 @@ const resolver = async () => {
 
     const decisionesProcesadas = [];
     const decisiones = response.data.decisiones;
+    const matrizDecisiones = [];
+
+    for (let i = 0; i < decisiones.length; i++) {
+      const fila = []; // Cada fila de la matriz
+      for (let j = 0; j < decisiones[i].length; j++) {
+        fila.push(decisiones[i][j]);
+      }
+      matrizDecisiones.push(fila); // Añadimos la fila a la matrizDecisiones
+    }
 
     for (let i = 0; i < decisiones.length; i++) {
       for (let j = 0; j < decisiones[i].length; j++) {
@@ -1383,6 +1394,12 @@ const resolver = async () => {
     respuestaNorthWestSolve.value.push(
       `Costo total de transporte: ${response.data.costo_total}`
     );
+
+    resultMatrix.value = matrizDecisiones;
+    isMatrixModalVisibleNorthWest.value = true;
+    A;
+
+    console.log(matrizDecisiones);
     console.log(response.data);
   } catch (error) {
     console.error("Hubo un error al enviar la solicitud:", error);
