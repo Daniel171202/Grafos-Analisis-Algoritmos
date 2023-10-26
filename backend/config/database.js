@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 /*import mysql from "mysql2";
+=======
+/**import mysql from "mysql2";
+>>>>>>> Stashed changes
 
 // create the connection to database
 const db = mysql.createConnection({
@@ -29,4 +33,8 @@ function handleDisconnect() {
 
 handleDisconnect();
 export default db;
+<<<<<<< Updated upstream
 */
+=======
+ */
+>>>>>>> Stashed changes

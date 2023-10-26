@@ -1366,13 +1366,85 @@ const resolver = async () => {
     const decisiones = response.data.decisiones;
     const matrizDecisiones = [];
 
-    for (let i = 0; i < decisiones.length; i++) {
+    /**for (let i = 0; i < decisiones.length; i++) {
       const fila = []; // Cada fila de la matriz
       for (let j = 0; j < decisiones[i].length; j++) {
         fila.push(decisiones[i][j]);
       }
       matrizDecisiones.push(fila); // Añadimos la fila a la matrizDecisiones
+    } */
+
+    /**for (let f = 0; f < adjacencyMatrix.length; f++) {
+      const fila = [];
+      for (let j = 0; j < adjacencyMatrix[f].length; j++) {
+        console.log("i: " + f + " j: " + j);
+        if (f == 0 && j >= 0) {
+          fila.push(adjacencyMatrix[0][j]);
+        } else {
+          if (f >= 0 && j == 0) {
+            fila.push(adjacencyMatrix[f][0]);
+          }
+        }
+      }
+      matrizDecisiones.push(fila);
+    } */
+
+    /**for (let i = 0; i < decisiones.length; i++) {
+      // Aumentamos el límite superior en 1
+      const fila = []; // Cada fila de la matriz
+
+      for (j = 0; j < decisiones[i].length; j++) {
+        // Aumentamos el límite superior en 1
+        //console.log("i: " + i + " j: " + j);
+        if (b == 1 && f == 0) {
+          j = 0;
+          i = 0;
+          f = 1;
+        }
+        console.log("i: " + i + " j: " + j);
+        if (i == 0 && j == 0 && b == 0) {
+          fila.push(" ");
+          b = 1;
+        } else {
+          if (i == 0) {
+            fila.push(adjacencyMatrix[0][j]); // Ajustamos índices
+          } else if (j == 0) {
+            1;
+            fila.push(adjacencyMatrix[i][0]); // Ajustamos índices
+          } else {
+            fila.push(decisiones[i - 1][j - 1]);
+          }
+        }
+      }
+      matrizDecisiones.push(fila); // Añadimos la fila a la matrizDecisiones
+    } */
+
+    for (let i = 0; i < decisiones.length + 1; i++) {
+      const fila = []; // Cada fila de la matriz
+      for (let j = 0; j < decisiones[i].length + 1; j++) {
+        if (i == 0 && j == 0) {
+          fila.push(" ");
+        } else {
+          if (j >= 0 && i == 0) {
+            fila.push(adjacencyMatrix[0][j]);
+          } else {
+            if (i >= 0 && j == 0) {
+              fila.push(adjacencyMatrix[i][0]);
+            } else {
+              fila.push(decisiones[i - 1][j - 1]);
+            }
+          }
+        }
+      }
+      matrizDecisiones.push(fila); // Añadimos la fila a la matrizDecisiones
     }
+
+    /**const objetoDecision = {
+          value: decisiones[i][j],
+          source: adjacencyMatrix[i + 1][0], // Usando los nombres de la matriz de adyacencia
+          destination: adjacencyMatrix[0][j + 1], // Usando los nombres de la matriz de adyacencia
+        };
+        fila.push(objetoDecision); */
 
     for (let i = 0; i < decisiones.length; i++) {
       for (let j = 0; j < decisiones[i].length; j++) {
@@ -1397,7 +1469,6 @@ const resolver = async () => {
 
     resultMatrix.value = matrizDecisiones;
     isMatrixModalVisibleNorthWest.value = true;
-    A;
 
     console.log(matrizDecisiones);
     console.log(response.data);

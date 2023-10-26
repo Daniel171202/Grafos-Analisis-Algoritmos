@@ -1,0 +1,5 @@
+
+backend/config/database.js
+backend/controllers/grafos.js
+backend/models/grafosModel.js
+backend/routes/routes.js
