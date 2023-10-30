@@ -26,6 +26,18 @@
         min="2"
         max="200"
       />
+      <div class="contenedor-entrada">
+        <input
+        type="number"
+        min="2"
+        max="1000"
+        v-model="numeroAgregar"
+        />
+        <button class="button-52" @click="addToArray(this.numeroAgregar)">Agregar</button>
+   
+       
+      </div>
+      
 
       <div class="container">
         <div
@@ -46,6 +58,7 @@ export default {
   name: "App",
   data() {
     return {
+      numeroAgregar: 0,
       array: [],
       size: 30,
       start_time: 0,
@@ -102,6 +115,16 @@ export default {
     getWidth() {
       return 1000 / this.size;
     },
+
+    addToArray(number){
+      if(number<5 || number>750){
+        alert("El número debe estar entre 5 y 750");
+        return;
+      }
+      this.array.push(number);
+      this.size++;
+    },
+    
 
     fillArray() {
       // populate array with random numbers between 5 and 750
@@ -304,6 +327,16 @@ export default {
 </script>
 
 <style scoped>
+.contenedor-entrada{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20%;
+  height: auto;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   min-width: 100vw;
   min-height: 100vh;
