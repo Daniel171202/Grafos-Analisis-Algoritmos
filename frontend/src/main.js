@@ -37,6 +37,11 @@ const routes = [
     path: "/Arboles",
     component: Arboles,
   },
+  {
+    name: "Algoritmos",
+    path: "/Algoritmos",  
+    component: () => import("./components/AlgoritmosComponente.vue"),
+  }
 ];
 const router = createRouter({
   history: createWebHistory(),
