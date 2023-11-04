@@ -72,6 +72,10 @@
             <button @click="showUpdateModal" class="btn-control-panel">
               Actualizar Grafo
             </button>
+
+            <button @click="algoritmoKruskal" class="btn-control-panel">
+              Algoritmo Kruskal
+            </button>
             
           </div>
         </div>
@@ -232,7 +236,7 @@
   import "v-network-graph/lib/style.css";
   import * as vNG from "v-network-graph";
   import axios from "axios";
-  import { Munkres } from "munkres-js";
+  import Kruskal from "@/utils/Kruskal.js";  
   
   let nodes = reactive({ ...data.nodes });
   let edges = reactive({ ...data.edges });
@@ -519,6 +523,7 @@
     }
   
     adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+    console.log (adjacencyMatrix);
     showNodoModal();
   }
   
@@ -671,6 +676,49 @@
     console.log(numbersAdjacencyMatrix);
   
     return numbersAdjacencyMatrix;
+  }
+
+
+
+
+
+  function quitarSumas(matriz) {
+      // Obtener el número de filas y columnas de la matriz
+      const numRows = matriz.length;
+      const numCols = matriz[0].length;
+
+      // Crear una nueva matriz sin la última fila y última columna
+      const nuevaMatriz = [];
+      for (let i = 0; i < numRows - 1; i++) {
+        const fila = [];
+        for (let j = 0; j < numCols - 1; j++) {
+          fila.push(matriz[i][j]);
+        }
+        nuevaMatriz.push(fila);
+      }
+
+      return nuevaMatriz;
+    }
+
+  function algoritmoKruskal(){
+    const matrix = quitarSumas(adjacencyMatrix);
+    const graph = [];
+    for (let i = 1; i < matrix.length; i++) {
+        for (let j = i + 1; j < matrix[i].length; j++) {
+            if (matrix[i][j] !== 0) {
+                graph.push([i, j, matrix[i][j]]);
+            }
+        }
+    }
+
+    // Resolver el problema del árbol de expansión mínima
+    const kruskal = new Kruskal(graph);
+    const minimumSpanningTree = kruskal.kruskalMST();
+    console.log("Árbol de expansión mínima:");
+    minimumSpanningTree.forEach(([u, v, w]) => {
+        console.log(`Node ${u} - Node ${v}: ${w}`);
+    });
+
   }
 
  
