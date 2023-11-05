@@ -50,4 +50,30 @@ export default class Kruskal {
 
         return result;
     }
+
+    kruskalMaxST() {
+        const result = [];
+        this.graph.sort((a, b) => b[2] - a[2]); // Ordenar en orden descendente
+
+        let edgeIndex = 0;
+
+        while (result.length < this.V - 1) {
+            if (edgeIndex >= this.graph.length) {
+                break; // Evitar un desbordamiento si no hay suficientes aristas
+            }
+
+            const [u, v, w] = this.graph[edgeIndex];
+            edgeIndex++;
+
+            const a = this.find(u);
+            const b = this.find(v);
+
+            if (a !== b) {
+                result.push([u, v, w]);
+                this.union(a, b);
+            }
+        }
+
+        return result;
+    }
 }

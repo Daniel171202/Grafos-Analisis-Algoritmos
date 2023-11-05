@@ -36,4 +36,5 @@ export default {
   nodes,
   edges,
   layouts,
+  paths,
 };

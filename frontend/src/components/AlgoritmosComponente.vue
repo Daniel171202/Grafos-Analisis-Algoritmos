@@ -73,8 +73,11 @@
               Actualizar Grafo
             </button>
 
-            <button @click="algoritmoKruskal" class="btn-control-panel">
-              Algoritmo Kruskal
+            <button @click="algoritmoKruskalMin" class="btn-control-panel">
+              Algoritmo Kruskal Minimo
+            </button>
+            <button @click="algoritmoKruskalMax" class="btn-control-panel">
+              Algoritmo Kruskal Maximo
             </button>
             
           </div>
@@ -241,11 +244,11 @@
   let nodes = reactive({ ...data.nodes });
   let edges = reactive({ ...data.edges });
   let paths = reactive({ ...data.paths });
+
+
   
   var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
   const isMatrixModalVisible = ref(false);
-  const isMatrixModalVisibleNorthWest = ref(false);
-  const isMatrixNorthWestModalVisible = ref(false);
   const isNodoModalVisible = ref(false);
   const isEdgeModalVisible = ref(false);
   const isSelectionVisible = ref(false);
@@ -295,6 +298,7 @@
       },
       edge: {
         selectable: true,
+        
         normal: {
           width: (edge) => edge.width,
           color: (edge) => edge.color,
@@ -700,7 +704,7 @@
       return nuevaMatriz;
     }
 
-  function algoritmoKruskal(){
+  function algoritmoKruskalMin(){
     const matrix = quitarSumas(adjacencyMatrix);
     const graph = [];
     for (let i = 1; i < matrix.length; i++) {
@@ -715,11 +719,91 @@
     const kruskal = new Kruskal(graph);
     const minimumSpanningTree = kruskal.kruskalMST();
     console.log("Árbol de expansión mínima:");
+    const nodesSpanningTree = [];
     minimumSpanningTree.forEach(([u, v, w]) => {
         console.log(`Node ${u} - Node ${v}: ${w}`);
+        nodesSpanningTree.push([`node${u}`,`node${v}`]);
     });
 
+    console.log(minimumSpanningTree)
+    console.log(nodesSpanningTree)
+    
+    //refresh nodes and edges
+
+
+    
+    updateEdgesWithSpanningTree(nodesSpanningTree);
+    adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+    toggleSidebar();
+
+    
+
   }
+  function algoritmoKruskalMax(){
+    const matrix = quitarSumas(adjacencyMatrix);
+    const graph = [];
+    for (let i = 1; i < matrix.length; i++) {
+        for (let j = i + 1; j < matrix[i].length; j++) {
+            if (matrix[i][j] !== 0) {
+                graph.push([i, j, matrix[i][j]]);
+            }
+        }
+    }
+
+    // Resolver el problema del árbol de expansión mínima
+    const kruskal = new Kruskal(graph);
+    const minimumSpanningTree = kruskal.kruskalMaxST();
+    console.log("Árbol de expansión maxima:");
+    const nodesSpanningTree = [];
+    minimumSpanningTree.forEach(([u, v, w]) => {
+        console.log(`Node ${u} - Node ${v}: ${w}`);
+        nodesSpanningTree.push([`node${u}`,`node${v}`]);
+    });
+
+    console.log(minimumSpanningTree)
+    console.log(nodesSpanningTree)
+    
+
+    
+    
+    updateEdgesWithSpanningTree(nodesSpanningTree);
+    adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+    toggleSidebar();
+
+  }
+
+  function updateEdgesWithSpanningTree(nodeSpanningTree) {
+      // Primero, restablecemos el color y el ancho de todas las aristas a sus valores originales
+      for (const key in edges) {
+        if (Object.prototype.hasOwnProperty.call(edges, key)) {
+          edges[key].color = "black";
+          edges[key].width = 1;
+        }
+      }
+
+      // Luego, aplicamos los cambios en color y ancho basados en el nodeSpanningTree
+      for (const path of nodeSpanningTree) {
+        for (let i = 0; i < path.length - 1; i++) {
+          const sourceNode = path[i];
+          const targetNode = path[i + 1];
+
+          // Buscamos la arista correspondiente en el objeto edges
+          for (const key in edges) {
+            if (Object.prototype.hasOwnProperty.call(edges, key)) {
+              if (
+                (edges[key].source === sourceNode && edges[key].target === targetNode) ||
+                (edges[key].source === targetNode && edges[key].target === sourceNode)
+              ) {
+                // Cambiamos el color y el ancho de la arista
+                edges[key].color = "green"; // Puedes cambiar el color a tu preferencia
+                edges[key].width = 4; // Puedes cambiar el ancho a tu preferencia
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
 
  
   </script>
