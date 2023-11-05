@@ -1,7 +1,6 @@
 class TreeNode {
     constructor(value) {
         this.value = value;
-        this.key = null;
         this.left = null;
         this.right = null;
     }
@@ -10,7 +9,7 @@ class TreeNode {
 export default class BinaryTree {
     constructor() {
         this.root = null;
-        this.quantity = 0;
+        this.elements = new Set();
         this.nodes = {};
         this.edges = {};
         this.layouts = { nodes: {} };
@@ -20,8 +19,6 @@ export default class BinaryTree {
         let newNode = new TreeNode(value);
         value = parseInt(value);
         if (this.root === null) {
-            this.quantity++;
-            newNode.key = `node${this.quantity}`;
             this.root = newNode;
         } else {
             let currentNode = this.root;
@@ -30,8 +27,6 @@ export default class BinaryTree {
                 if (value < currentNode.value) {
                     //left
                     if (!currentNode.left) {
-                        this.quantity++;
-                        newNode.key = `node${this.quantity}`;
                         currentNode.left = newNode;
                         positionFounded = true;
                     }
@@ -39,8 +34,6 @@ export default class BinaryTree {
                 } else {
                     //right
                     if (!currentNode.right) {
-                        this.quantity++;
-                        newNode.key = `node${this.quantity}`;
                         currentNode.right = newNode;
                         positionFounded = true;
                     }
@@ -49,6 +42,7 @@ export default class BinaryTree {
             }
         }
 
+        this.elements.add(value);
         this.updateGraphData();
     }
 
@@ -98,7 +92,7 @@ export default class BinaryTree {
             }
         }
 
-        calculateNodePositions.call(this, this.root, 0, 0, 200, 100); // Ajusta los valores de horizontalGap y verticalGap según tus necesidades
+        calculateNodePositions.call(this, this.root, 0, -250, 200, 100); // Ajusta los valores de horizontalGap y verticalGap según tus necesidades
 
     }
 
@@ -152,6 +146,77 @@ export default class BinaryTree {
         return root;
     }
 
+
+    deleteNode(value) {
+        this.root = this.removeNode(this.root, value);
+        this.updateGraphData();
+        this.updateElements();
+    }
+
+    removeNode(node, value) {
+        if (node === null) {
+            return null;
+        }
+
+        if (value < node.value) {
+            node.left = this.removeNode(node.left, value);
+        } else if (value > node.value) {
+            node.right = this.removeNode(node.right, value);
+        } else {
+            // Nodo encontrado, procedemos a eliminarlo
+            if (node.left === null && node.right === null) {
+                // Caso 1: Nodo hoja
+                node = null;
+            } else if (node.left === null) {
+                // Caso 2: Nodo con un hijo derecho
+                node = node.right;
+            } else if (node.right === null) {
+                // Caso 2: Nodo con un hijo izquierdo
+                node = node.left;
+            } else {
+                // Caso 3: Nodo con dos hijos
+                const minValue = this.findMinValue(node.right);
+                node.value = minValue;
+                node.right = this.removeNode(node.right, minValue);
+            }
+        }
+
+        return node;
+    }
+
+    // Función para actualizar la lista de elementos
+    updateElements() {
+        this.elements.clear(); // Limpiar el conjunto actual
+        this.traverseTreeToAddElements(this.root);
+    }
+
+    // Función recursiva para recorrer el árbol y agregar elementos al conjunto
+    traverseTreeToAddElements(node) {
+        if (node) {
+            this.elements.add(node.value);
+            this.traverseTreeToAddElements(node.left);
+            this.traverseTreeToAddElements(node.right);
+        }
+    }
+
+    findMinValue(node) {
+        while (node.left !== null) {
+            node = node.left;
+        }
+        return node.value;
+    }
+
+    reset(){
+        this.root = null;
+        this.elements = new Set();
+        this.nodes = {};
+        this.edges = {};
+        this.layouts = { nodes: {} };
+    }
+
+    getUniqueElements() {
+        return Array.from(this.elements);
+    }
 
 
     toString() {
