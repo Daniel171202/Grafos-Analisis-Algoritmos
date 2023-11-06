@@ -84,6 +84,9 @@
           <button @click="showMatrixNorthWestModal" class="btn-control-panel">
             Método North West
           </button>
+          <button @click="handleClick" class="btn-control-panel">
+            Calcular Dijkstra
+          </button>
         </div>
       </div>
     </div>
@@ -314,7 +317,53 @@
       </table>
     </div>
   </div>
+
+  <div ref="errorModal" class="modal-error">
+    <div class="modal-content-error">
+      <span @click="closeErrorModal" class="close-btn-error">&times;</span>
+      <p style="font-size: 2rem">
+        No se puede conectar un nodo reciente con uno más antiguo. No está
+        permitida la reversa.
+      </p>
+    </div>
+  </div>
 </template>
+
+<style scoped>
+.modal-error {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1;
+}
+
+.modal-content-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 10vh;
+  width: auto;
+  padding: 5% 7%;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.close-btn-error {
+  color: #aaa;
+  float: right;
+  font-size: 3rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close-btn-error:hover {
+  color: red;
+}
+</style>
 
 <script setup>
 import { reactive, ref, toRefs } from "vue";
@@ -342,6 +391,7 @@ const isResultadoAsignacionVisible = ref(false);
 const isResultadoNorthWestVisible = ref(false);
 const respuestaNorthWest = ref([]);
 const resultMatrix = ref([]);
+const errorModal = ref(null);
 
 /**problem grafos */
 const solucion = ref([]);
@@ -690,16 +740,29 @@ function addLoopEdge() {
   }
 }
 /**función loop */
+const showErrorModal = () => {
+  errorModal.value.style.display = "block";
+};
 
+const closeErrorModal = () => {
+  errorModal.value.style.display = "none";
+};
 function addEdge(edge) {
   if (selectedNodes.value.length !== 2 && selectedNodes.value.length !== 1) {
-    // Si no hay exactamente dos nodos seleccionados, muestra un mensaje de error o realiza alguna otra acción de manejo de errores.
     console.error(
       "Selecciona exactamente dos nodos o un nodo para agregar un bucle."
     );
     return;
   }
+
   const [source, target] = selectedNodes.value;
+
+  // Comprueba si el nodo source es más reciente que el nodo target
+  if (source > target) {
+    showErrorModal();
+    return;
+  }
+
   const edgeId = `edge${nextEdgeIndex.value++}`;
   edges[edgeId] = { source, target, ...edge };
   actualEdgeIndex.value = edgeId;
@@ -796,6 +859,138 @@ function nameofEdge(edge) {
   const aux = label || cost ? `${label && cost ? " " : ""}${cost}` : " ";
   return aux;
 }
+
+/**FUNCIÓN DE APLICACIÓN DE DJIKSTRA */
+function getNodeNames(matrix) {
+  return matrix[0].slice(1, -1);
+}
+
+function getWeightMatrix(matrix) {
+  return matrix.slice(1, -1).map((row) => row.slice(1, -1));
+}
+
+function extractGraphData(nodes, edges) {
+  const matrix = createAdjacencyMatrix(nodes, edges);
+  const nodeNames = getNodeNames(matrix);
+  const weightMatrix = getWeightMatrix(matrix);
+  console.log("Nombres de nodos:", nodeNames);
+  console.log("Matriz de adyacencia (solo pesos):", weightMatrix);
+  // Puedes devolver los valores si necesitas hacer algo con ellos después del log
+  return { nodeNames, weightMatrix };
+}
+
+// Función de Dijkstra para encontrar el camino más corto desde un nodo inicial
+function dijkstra(weightMatrix, startNode) {
+  const distances = Array(weightMatrix.length).fill(Infinity);
+  const visited = Array(weightMatrix.length).fill(false);
+  const predecessors = Array(weightMatrix.length).fill(null);
+
+  // La distancia del nodo inicial a sí mismo es siempre 0
+  distances[startNode] = 0;
+
+  // Encuentra el nodo con la menor distancia desde el conjunto de nodos no visitados
+  const findMinDistanceNode = (distances, visited) => {
+    let minDistance = Infinity;
+    let minIndex = -1;
+
+    for (let i = 0; i < distances.length; i++) {
+      if (!visited[i] && distances[i] < minDistance) {
+        minDistance = distances[i];
+        minIndex = i;
+      }
+    }
+
+    return minIndex;
+  };
+
+  for (let i = 0; i < distances.length; i++) {
+    const minIndex = findMinDistanceNode(distances, visited);
+    visited[minIndex] = true;
+
+    for (let j = 0; j < weightMatrix.length; j++) {
+      if (weightMatrix[minIndex][j] && !visited[j]) {
+        const currentDistance = distances[minIndex] + weightMatrix[minIndex][j];
+        if (currentDistance < distances[j]) {
+          distances[j] = currentDistance;
+          predecessors[j] = minIndex;
+        }
+      }
+    }
+  }
+
+  return { distances, predecessors };
+}
+
+// Esta función reconstruye el camino más corto desde el nodo inicial hasta el nodo destino.
+function reconstructPath(predecessors, startNode, endNode) {
+  let path = [];
+  let currentNode = endNode;
+
+  while (currentNode !== startNode) {
+    path.unshift(currentNode);
+    currentNode = predecessors[currentNode];
+    if (currentNode === null) {
+      return [];
+    }
+  }
+
+  path.unshift(startNode);
+  return path;
+}
+
+function applyDijkstra(nodes, weightMatrix) {
+  console.log("Nodos:", nodes);
+  console.log("Matriz de pesos:", weightMatrix);
+
+  const startNode = 0;
+  console.log("Nodo de inicio:", startNode);
+
+  const results = dijkstra(weightMatrix, startNode);
+  console.log("Resultados de Dijkstra:", results);
+
+  for (let endNode = 0; endNode < nodes.length; endNode++) {
+    console.log(`Nodo final actual: ${endNode} (${nodes[endNode]})`);
+
+    if (startNode !== endNode) {
+      console.log(
+        `Procesando ruta del nodo de inicio ${startNode} al nodo final ${endNode}`
+      );
+
+      const pathIndices = reconstructPath(
+        results.predecessors,
+        startNode,
+        endNode
+      );
+      console.log(`Índices de ruta para el nodo ${endNode}:`, pathIndices);
+
+      if (pathIndices.length > 0) {
+        const pathNames = pathIndices.map((index) => nodes[index]);
+        console.log(`Nombres de ruta para el nodo ${endNode}:`, pathNames);
+
+        const pathCost = results.distances[endNode];
+        console.log(`Costo de la ruta para el nodo ${endNode}:`, pathCost);
+
+        console.log(
+          `Ruta más corta de '${nodes[startNode]}' a '${
+            nodes[endNode]
+          }': ${pathNames.join(" -> ")}, Costo: ${pathCost}`
+        );
+      } else {
+        console.log(
+          `No hay ruta disponible de '${nodes[startNode]}' a '${nodes[endNode]}'`
+        );
+      }
+    }
+  }
+}
+
+function handleClick() {
+  console.log("Botón presionado");
+  const { nodeNames, weightMatrix } = extractGraphData(nodes, edges);
+  applyDijkstra(nodeNames, weightMatrix);
+}
+
+/** FIN DE LA FUNCIÓN */
 
 /**Función de Johnson */
 
@@ -1366,60 +1561,7 @@ const resolver = async () => {
     const decisiones = response.data.decisiones;
     const matrizDecisiones = [];
 
-    /**for (let i = 0; i < decisiones.length; i++) {
-      const fila = []; // Cada fila de la matriz
-      for (let j = 0; j < decisiones[i].length; j++) {
-        fila.push(decisiones[i][j]);
-      }
-      matrizDecisiones.push(fila); // Añadimos la fila a la matrizDecisiones
-    } */
-
-    /**for (let f = 0; f < adjacencyMatrix.length; f++) {
-      const fila = [];
-      for (let j = 0; j < adjacencyMatrix[f].length; j++) {
-        console.log("i: " + f + " j: " + j);
-        if (f == 0 && j >= 0) {
-          fila.push(adjacencyMatrix[0][j]);
-        } else {
-          if (f >= 0 && j == 0) {
-            fila.push(adjacencyMatrix[f][0]);
-          }
-        }
-      }
-      matrizDecisiones.push(fila);
-    } */
-
-    /**for (let i = 0; i < decisiones.length; i++) {
-      // Aumentamos el límite superior en 1
-      const fila = []; // Cada fila de la matriz
-
-      for (j = 0; j < decisiones[i].length; j++) {
-        // Aumentamos el límite superior en 1
-        //console.log("i: " + i + " j: " + j);
-        if (b == 1 && f == 0) {
-          j = 0;
-          i = 0;
-          f = 1;
-        }
-        console.log("i: " + i + " j: " + j);
-        if (i == 0 && j == 0 && b == 0) {
-          fila.push(" ");
-          b = 1;
-        } else {
-          if (i == 0) {
-            fila.push(adjacencyMatrix[0][j]); // Ajustamos índices
-          } else if (j == 0) {
-            1;
-            fila.push(adjacencyMatrix[i][0]); // Ajustamos índices
-          } else {
-            fila.push(decisiones[i - 1][j - 1]);
-          }
-        }
-      }
-      matrizDecisiones.push(fila); // Añadimos la fila a la matrizDecisiones
-    } */
-
-    for (let i = 0; i < decisiones.length + 1; i++) {
+    for (let i = 0; i < decisiones.length; i++) {
       const fila = []; // Cada fila de la matriz
       for (let j = 0; j < decisiones[i].length + 1; j++) {
         if (i == 0 && j == 0) {
@@ -1438,13 +1580,6 @@ const resolver = async () => {
       }
       matrizDecisiones.push(fila); // Añadimos la fila a la matrizDecisiones
     }
-
-    /**const objetoDecision = {
-          value: decisiones[i][j],
-          source: adjacencyMatrix[i + 1][0], // Usando los nombres de la matriz de adyacencia
-          destination: adjacencyMatrix[0][j + 1], // Usando los nombres de la matriz de adyacencia
-        };
-        fila.push(objetoDecision); */
 
     for (let i = 0; i < decisiones.length; i++) {
       for (let j = 0; j < decisiones[i].length; j++) {

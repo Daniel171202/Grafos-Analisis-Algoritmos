@@ -1,12 +1,8 @@
-<<<<<<< Updated upstream
-/*import db from "../config/database.js";
-=======
 /**import {
   getGrafosModel,
   createGrafoModel,
   updateGrafoModel,
 } from "../models/grafosModel.js";
->>>>>>> Stashed changes
 
 export const getGrafos = (req, res) => {
   getGrafosModel(req.params.idUsuario, (err, data) => {
@@ -31,9 +27,6 @@ export const createGrafo = (req, res) => {
     }
   });
 };
-<<<<<<< Updated upstream
-*/
-=======
 
 export const updateGrafo = (req, res) => {
   updateGrafoModel(req.params.idGrafo, req.body, (err, data) => {
@@ -47,4 +40,3 @@ export const updateGrafo = (req, res) => {
   });
 };
  */
->>>>>>> Stashed changes
