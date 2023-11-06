@@ -48,6 +48,16 @@
               ><i class="fas fa-cogs fa-bounce"></i><a> Ir a Arboles</a></span
             >
           </button>
+          <button class="opciones col-md-4" @click="goToPage('/Compet')">
+            <span class="move"
+              ><i class="fas fa-cogs fa-bounce"></i><a> Ir a Compet</a></span
+            >
+          </button>
+          <button class="opciones col-md-4" @click="goToPage('/Algoritmos')">
+            <span class="move"
+              ><i class="fas fa-cogs fa-bounce"></i><a> Ir a Algoritmas</a></span
+            >
+          </button>
           <!--<button class="opciones col-md-4" @click="goToPage('/Asignación')">
             <span class="move"
               ><i class="fas fa-th fa-bounce"></i

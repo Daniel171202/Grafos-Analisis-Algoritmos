@@ -41,6 +41,11 @@ const routes = [
     name: "Algoritmos",
     path: "/Algoritmos",  
     component: () => import("./components/AlgoritmosComponente.vue"),
+  },
+  {
+    name: "Compet",
+    path: "/Compet",
+    component: () => import("./components/CompetComponente.vue"),
   }
 ];
 const router = createRouter({
