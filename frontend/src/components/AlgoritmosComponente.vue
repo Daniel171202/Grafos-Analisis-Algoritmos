@@ -79,6 +79,13 @@
             <button @click="algoritmoKruskalMax" class="btn-control-panel">
               Algoritmo Kruskal Maximo
             </button>
+
+            <button @click="doDijkstraMin" class="btn-control-panel">
+              Algoritmo Dijkstra Minimo
+            </button>
+            <button @click="doDijkstraMax" class="btn-control-panel">
+              Algoritmo Dijkstra Maximo
+            </button>
             
           </div>
         </div>
@@ -240,6 +247,7 @@
   import * as vNG from "v-network-graph";
   import axios from "axios";
   import Kruskal from "@/utils/Kruskal.js";  
+  import Dijkstra from "@/utils/DijKestra.js";
   
   let nodes = reactive({ ...data.nodes });
   let edges = reactive({ ...data.edges });
@@ -771,6 +779,131 @@
     toggleSidebar();
 
   }
+  function transformMatrixForDijkstra(matrix) {
+        const transformedMatrix = [];
+
+        for (let i = 1; i < matrix.length; i++) {
+            const row = [];
+            for (let j = 1; j < matrix[i].length; j++) {
+                if (matrix[i][j] === 0) {
+                    row.push(Infinity); // Reemplazar los valores nulos con Infinity
+                } else {
+                    row.push(matrix[i][j]);
+                }
+            }
+            transformedMatrix.push(row);
+        }
+
+        return transformedMatrix;
+    }
+
+
+    function findCriticalPathMin(sourceNode, targetNode, graph, adjacencyMatrix) {
+        const dijkstra = new Dijkstra(graph);
+        const dist = dijkstra.dijkstraMin(sourceNode);
+
+        if (dist[targetNode] === Infinity) {
+            console.log("No hay camino entre el nodo " + sourceNode + " y el nodo " + targetNode);
+            return [];
+        }
+
+        const criticalPath = [];
+        let currentNode = targetNode;
+
+        while (currentNode !== sourceNode) {
+            for (let prevNode = 0; prevNode < graph.length; prevNode++) {
+                if (graph[prevNode][currentNode] && dist[currentNode] === dist[prevNode] + graph[prevNode][currentNode]) {
+                    criticalPath.unshift([prevNode, currentNode, graph[prevNode][currentNode]]);
+                    currentNode = prevNode;
+                    break;
+                }
+            }
+        }
+
+        return criticalPath;
+    }
+
+    function doDijkstraMin() {
+        // Crear una instancia de Dijkstra y encontrar los caminos más cortos desde un nodo origen
+        const matrix = quitarSumas(adjacencyMatrix);
+        const graph = transformMatrixForDijkstra(matrix);
+        
+        const sourceNode = 0; // Cambia esto al nodo de origen deseado
+        const targetNode = 4; // Cambia esto al nodo de destino deseado
+
+        const criticalPath = findCriticalPathMin(sourceNode, targetNode, graph, adjacencyMatrix);
+        const nodesSpanningTree = [];
+        if (criticalPath.length > 0) {
+            console.log("Ruta crítica desde el nodo " + sourceNode + " al nodo " + targetNode + ":");
+            for (const [u, v, w] of criticalPath) {
+                console.log("Nodo " + u + " - Nodo " + v + ": " + w);
+                nodesSpanningTree.push([`node${u+1}`,`node${v+1}`]);
+
+            }
+        }
+        console.log(nodesSpanningTree)
+        updateEdgesWithSpanningTree(nodesSpanningTree);
+        adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+        toggleSidebar();
+      }
+
+
+
+
+
+      function findCriticalPathMax(sourceNode, targetNode, graph, adjacencyMatrix) {
+          const dijkstra = new Dijkstra(graph);
+          const dist = dijkstra.dijkstraMax(sourceNode); // Usa dijkstraMax para encontrar la distancia máxima
+
+          if (dist[targetNode] === -Infinity) {
+              console.log("No hay camino entre el nodo " + sourceNode + " y el nodo " + targetNode);
+              return [];
+          }
+
+          const criticalPath = [];
+          let currentNode = targetNode;
+
+          while (currentNode !== sourceNode) {
+              for (let prevNode = 0; prevNode < graph.length; prevNode++) {
+                  if (graph[prevNode][currentNode] && dist[currentNode] === dist[prevNode] + graph[prevNode][currentNode]) {
+                      criticalPath.unshift([prevNode, currentNode, graph[prevNode][currentNode]]);
+                      currentNode = prevNode;
+                      break;
+                  }
+              }
+          }
+
+          return criticalPath;
+      }
+
+      function doDijkstraMax() {
+          // Crear una instancia de Dijkstra y encontrar los caminos más largos desde un nodo origen
+          const matrix = quitarSumas(adjacencyMatrix);
+          const graph = transformMatrixForDijkstra(matrix);
+          
+          const sourceNode = 0; // Cambia esto al nodo de origen deseado
+          const targetNode = 3; // Cambia esto al nodo de destino deseado
+
+          const criticalPath = findCriticalPathMax(sourceNode, targetNode, graph, adjacencyMatrix);
+
+          const nodesSpanningTree = [];
+            if (criticalPath.length > 0) {
+                console.log("Ruta crítica desde el nodo " + sourceNode + " al nodo " + targetNode + ":");
+                for (const [u, v, w] of criticalPath) {
+                    console.log("Nodo " + u + " - Nodo " + v + ": " + w);
+                    nodesSpanningTree.push([`node${u+1}`,`node${v+1}`]);
+
+                }
+            }
+            console.log(nodesSpanningTree)
+            updateEdgesWithSpanningTree(nodesSpanningTree);
+            adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+            toggleSidebar();
+        }
+
+
+
+
 
   function updateEdgesWithSpanningTree(nodeSpanningTree) {
       // Primero, restablecemos el color y el ancho de todas las aristas a sus valores originales
