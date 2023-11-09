@@ -83,7 +83,7 @@
             <button @click="doDijkstraMin" class="btn-control-panel">
               Algoritmo Dijkstra Minimo
             </button>
-            <button @click="doDijkstraMax" class="btn-control-panel">
+            <button @click="doDijkstraMinMax" class="btn-control-panel">
               Algoritmo Dijkstra Maximo
             </button>
             
@@ -798,7 +798,7 @@
     }
 
 
-    function findCriticalPathMin(sourceNode, targetNode, graph, adjacencyMatrix) {
+    function findCriticalPathMin(sourceNode, targetNode, graph) {
         const dijkstra = new Dijkstra(graph);
         const dist = dijkstra.dijkstraMin(sourceNode);
 
@@ -827,11 +827,69 @@
         // Crear una instancia de Dijkstra y encontrar los caminos más cortos desde un nodo origen
         const matrix = quitarSumas(adjacencyMatrix);
         const graph = transformMatrixForDijkstra(matrix);
-        
-        const sourceNode = 0; // Cambia esto al nodo de origen deseado
-        const targetNode = 4; // Cambia esto al nodo de destino deseado
 
-        const criticalPath = findCriticalPathMin(sourceNode, targetNode, graph, adjacencyMatrix);
+        
+        var sourceNode = selectedNodes.value[0]; // Cambia esto al nodo de origen deseado
+        var targetNode = selectedNodes.value[1]; // Cambia esto al nodo de destino deseado
+                // Obtener el último carácter de sourceNode y convertirlo a un número entero
+        const lastCharSourceNode = parseInt(sourceNode.charAt(sourceNode.length - 1), 10);
+
+        // Obtener el último carácter de targetNode y convertirlo a un número entero
+        const lastCharTargetNode = parseInt(targetNode.charAt(targetNode.length - 1), 10);
+
+        // Ahora lastCharSourceNode y lastCharTargetNode son números enteros
+        console.log(lastCharSourceNode);
+        console.log(lastCharTargetNode);
+
+        sourceNode = lastCharSourceNode-1; // Cambia esto al nodo de origen deseado
+        targetNode = lastCharTargetNode-1; // Cambia esto al nodo de destino deseado
+
+        const criticalPath = findCriticalPathMin(sourceNode, targetNode, graph);
+        const nodesSpanningTree = [];
+        if (criticalPath.length > 0) {
+            console.log("Ruta crítica desde el nodo " + sourceNode + " al nodo " + targetNode + ":");
+            for (const [u, v, w] of criticalPath) {
+                console.log("Nodo " + u + " - Nodo " + v + ": " + w);
+                nodesSpanningTree.push([`node${u+1}`,`node${v+1}`]);
+
+            }
+        }
+        console.log(nodesSpanningTree)
+        updateEdgesWithSpanningTree(nodesSpanningTree);
+        adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+        toggleSidebar();
+      }
+
+
+      function doDijkstraMinMax() {
+        // Crear una instancia de Dijkstra y encontrar los caminos más cortos desde un nodo origen
+        const matrix = quitarSumas(adjacencyMatrix);
+        const graph = transformMatrixForDijkstra(matrix);
+        //convert all values of graph to negative
+
+        for (let i = 0; i < graph.length; i++) {
+            for (let j = 0; j < graph[i].length; j++) {
+                graph[i][j] = -graph[i][j];
+            }
+        }
+
+        
+        var sourceNode = selectedNodes.value[0]; // Cambia esto al nodo de origen deseado
+        var targetNode = selectedNodes.value[1]; // Cambia esto al nodo de destino deseado
+                // Obtener el último carácter de sourceNode y convertirlo a un número entero
+        const lastCharSourceNode = parseInt(sourceNode.charAt(sourceNode.length - 1), 10);
+
+        // Obtener el último carácter de targetNode y convertirlo a un número entero
+        const lastCharTargetNode = parseInt(targetNode.charAt(targetNode.length - 1), 10);
+
+        // Ahora lastCharSourceNode y lastCharTargetNode son números enteros
+        console.log(lastCharSourceNode);
+        console.log(lastCharTargetNode);
+
+        sourceNode = lastCharSourceNode-1; // Cambia esto al nodo de origen deseado
+        targetNode = lastCharTargetNode-1; // Cambia esto al nodo de destino deseado
+
+        const criticalPath = findCriticalPathMin(sourceNode, targetNode, graph);
         const nodesSpanningTree = [];
         if (criticalPath.length > 0) {
             console.log("Ruta crítica desde el nodo " + sourceNode + " al nodo " + targetNode + ":");
@@ -851,7 +909,7 @@
 
 
 
-      function findCriticalPathMax(sourceNode, targetNode, graph, adjacencyMatrix) {
+      function findCriticalPathMax(sourceNode, targetNode, graph) {
           const dijkstra = new Dijkstra(graph);
           const dist = dijkstra.dijkstraMax(sourceNode); // Usa dijkstraMax para encontrar la distancia máxima
 
@@ -881,10 +939,22 @@
           const matrix = quitarSumas(adjacencyMatrix);
           const graph = transformMatrixForDijkstra(matrix);
           
-          const sourceNode = 0; // Cambia esto al nodo de origen deseado
-          const targetNode = 3; // Cambia esto al nodo de destino deseado
+          var sourceNode = selectedNodes.value[0]; // Cambia esto al nodo de origen deseado
+        var targetNode = selectedNodes.value[1]; // Cambia esto al nodo de destino deseado
+                // Obtener el último carácter de sourceNode y convertirlo a un número entero
+        const lastCharSourceNode = parseInt(sourceNode.charAt(sourceNode.length - 1), 10);
 
-          const criticalPath = findCriticalPathMax(sourceNode, targetNode, graph, adjacencyMatrix);
+        // Obtener el último carácter de targetNode y convertirlo a un número entero
+        const lastCharTargetNode = parseInt(targetNode.charAt(targetNode.length - 1), 10);
+
+        // Ahora lastCharSourceNode y lastCharTargetNode son números enteros
+        console.log(lastCharSourceNode);
+        console.log(lastCharTargetNode);
+
+        sourceNode = lastCharSourceNode-1; // Cambia esto al nodo de origen deseado
+        targetNode = lastCharTargetNode-1; // Cambia esto al nodo de destino deseado
+
+          const criticalPath = findCriticalPathMax(sourceNode, targetNode, graph);
 
           const nodesSpanningTree = [];
             if (criticalPath.length > 0) {

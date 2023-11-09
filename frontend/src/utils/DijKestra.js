@@ -32,25 +32,27 @@ export default class Dijkstra {
         const dist = new Array(this.V);
         const visited = new Array(this.V);
         for (let i = 0; i < this.V; i++) {
-            dist[i] = -Infinity; // Inicializar con -Infinity para encontrar la distancia máxima
+            dist[i] = -Infinity; // Cambiado a -Infinity
             visited[i] = false;
         }
-
+    
         dist[source] = 0;
-
+    
         for (let count = 0; count < this.V - 1; count++) {
-            const u = this.maxDistance(dist, visited); // Usar maxDistance en lugar de minDistance
+            const u = this.maxDistance(dist, visited);
             visited[u] = true;
-
+    
             for (let v = 0; v < this.V; v++) {
                 if (!visited[v] && this.graph[u][v] && dist[u] !== -Infinity && dist[u] + this.graph[u][v] > dist[v]) {
                     dist[v] = dist[u] + this.graph[u][v];
                 }
             }
         }
-
+    
         return dist;
     }
+    
+    
 
     minDistance(dist, visited) {
         let min = Infinity;
