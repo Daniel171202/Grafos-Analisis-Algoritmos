@@ -73,19 +73,10 @@
               Actualizar Grafo
             </button>
 
-            <button @click="algoritmoKruskalMin" class="btn-control-panel">
-              Algoritmo Kruskal Minimo
+            <button @click="doCompet" class="btn-control-panel">
+              Realizar algoritmo Compet
             </button>
-            <button @click="algoritmoKruskalMax" class="btn-control-panel">
-              Algoritmo Kruskal Maximo
-            </button>
-
-            <button @click="doDijkstraMin" class="btn-control-panel">
-              Algoritmo Dijkstra Minimo
-            </button>
-            <button @click="doDijkstraMax" class="btn-control-panel">
-              Algoritmo Dijkstra Maximo
-            </button>
+           
             
           </div>
         </div>
@@ -134,8 +125,8 @@
       <div class="modal2" v-if="isNodoModalVisible">
         <div class="modal-content">
           <span class="close" @click="hideNodoModal">&times;</span>
-          <h3>Nombre Nodo:</h3>
-          <label>Nombre:</label>
+          <h3>Ingrese los dos valores separados por coma:</h3>
+          <label>Valores:</label>
           <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
           <input type="text" v-model="nodes[actualNodeIndex].name" />
           <button class="btn-control-panel" @click="hideNodoModal">
@@ -247,7 +238,6 @@
   import * as vNG from "v-network-graph";
   import axios from "axios";
   import Kruskal from "@/utils/Kruskal.js";  
-  import Dijkstra from "@/utils/DijKestra.js";
   
   let nodes = reactive({ ...data.nodes });
   let edges = reactive({ ...data.edges });
@@ -523,9 +513,9 @@
   
  
   
-  function addNode(node, x, y) {
+  function addNode(node, x, y, xcompet,ycompet) {
     const nodeId = `node${nextNodeIndex.value}`;
-    const name = `Node ${nextNodeIndex.value}`;
+    const name = ``;
     nodes[nodeId] = { name, ...node };
     actualNodeIndex.value = nodeId;
     nextNodeIndex.value++;
@@ -711,232 +701,33 @@
 
       return nuevaMatriz;
     }
-
-  function algoritmoKruskalMin(){
-    const matrix = quitarSumas(adjacencyMatrix);
-    const graph = [];
-    for (let i = 1; i < matrix.length; i++) {
-        for (let j = i + 1; j < matrix[i].length; j++) {
-            if (matrix[i][j] !== 0) {
-                graph.push([i, j, matrix[i][j]]);
-            }
-        }
+    function doCompet(){
+        const matrizAdyacencia = quitarSumas(adjacencyMatrix);
+        const nombresNodos = matrizAdyacencia[0].slice(1); // Excluir el espacio en blanco
+        const centroide = calcularCentroide(matrizAdyacencia, nombresNodos);
+        alert("Centroide:  x= " + centroide.x + "  ,  y= " + centroide.y)
+        console.log("Centroide:", centroide);
     }
+    function calcularCentroide(matriz, nombresNodos) {
+        let sumaX = 0;
+        let sumaY = 0;
+        let numNodos = 0;
 
-    // Resolver el problema del árbol de expansión mínima
-    const kruskal = new Kruskal(graph);
-    const minimumSpanningTree = kruskal.kruskalMST();
-    console.log("Árbol de expansión mínima:");
-    const nodesSpanningTree = [];
-    minimumSpanningTree.forEach(([u, v, w]) => {
-        console.log(`Node ${u} - Node ${v}: ${w}`);
-        nodesSpanningTree.push([`node${u}`,`node${v}`]);
-    });
+        for (let i = 0; i < nombresNodos.length; i++) {
+            for (let j = 0; j < nombresNodos.length; j++) {
+            const valor = matriz[i + 1][j + 1]; // El índice +1 se debe a la fila y columna de nombres
 
-    console.log(minimumSpanningTree)
-    console.log(nodesSpanningTree)
-    
-    //refresh nodes and edges
-
-
-    
-    updateEdgesWithSpanningTree(nodesSpanningTree);
-    adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
-    toggleSidebar();
-
-    
-
-  }
-  function algoritmoKruskalMax(){
-    const matrix = quitarSumas(adjacencyMatrix);
-    const graph = [];
-    for (let i = 1; i < matrix.length; i++) {
-        for (let j = i + 1; j < matrix[i].length; j++) {
-            if (matrix[i][j] !== 0) {
-                graph.push([i, j, matrix[i][j]]);
-            }
-        }
-    }
-
-    // Resolver el problema del árbol de expansión mínima
-    const kruskal = new Kruskal(graph);
-    const minimumSpanningTree = kruskal.kruskalMaxST();
-    console.log("Árbol de expansión maxima:");
-    const nodesSpanningTree = [];
-    minimumSpanningTree.forEach(([u, v, w]) => {
-        console.log(`Node ${u} - Node ${v}: ${w}`);
-        nodesSpanningTree.push([`node${u}`,`node${v}`]);
-    });
-
-    console.log(minimumSpanningTree)
-    console.log(nodesSpanningTree)
-    
-
-    
-    
-    updateEdgesWithSpanningTree(nodesSpanningTree);
-    adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
-    toggleSidebar();
-
-  }
-  function transformMatrixForDijkstra(matrix) {
-        const transformedMatrix = [];
-
-        for (let i = 1; i < matrix.length; i++) {
-            const row = [];
-            for (let j = 1; j < matrix[i].length; j++) {
-                if (matrix[i][j] === 0) {
-                    row.push(Infinity); // Reemplazar los valores nulos con Infinity
-                } else {
-                    row.push(matrix[i][j]);
-                }
-            }
-            transformedMatrix.push(row);
-        }
-
-        return transformedMatrix;
-    }
-
-
-    function findCriticalPathMin(sourceNode, targetNode, graph, adjacencyMatrix) {
-        const dijkstra = new Dijkstra(graph);
-        const dist = dijkstra.dijkstraMin(sourceNode);
-
-        if (dist[targetNode] === Infinity) {
-            console.log("No hay camino entre el nodo " + sourceNode + " y el nodo " + targetNode);
-            return [];
-        }
-
-        const criticalPath = [];
-        let currentNode = targetNode;
-
-        while (currentNode !== sourceNode) {
-            for (let prevNode = 0; prevNode < graph.length; prevNode++) {
-                if (graph[prevNode][currentNode] && dist[currentNode] === dist[prevNode] + graph[prevNode][currentNode]) {
-                    criticalPath.unshift([prevNode, currentNode, graph[prevNode][currentNode]]);
-                    currentNode = prevNode;
-                    break;
-                }
+            sumaX += valor * parseInt(nombresNodos[i].split(",")[0]);
+            sumaY += valor * parseInt(nombresNodos[i].split(",")[1]);
+            numNodos += valor;
             }
         }
 
-        return criticalPath;
-    }
+        const centroideX = sumaX / numNodos;
+        const centroideY = sumaY / numNodos;
 
-    function doDijkstraMin() {
-        // Crear una instancia de Dijkstra y encontrar los caminos más cortos desde un nodo origen
-        const matrix = quitarSumas(adjacencyMatrix);
-        const graph = transformMatrixForDijkstra(matrix);
-        
-        const sourceNode = 0; // Cambia esto al nodo de origen deseado
-        const targetNode = 4; // Cambia esto al nodo de destino deseado
-
-        const criticalPath = findCriticalPathMin(sourceNode, targetNode, graph, adjacencyMatrix);
-        const nodesSpanningTree = [];
-        if (criticalPath.length > 0) {
-            console.log("Ruta crítica desde el nodo " + sourceNode + " al nodo " + targetNode + ":");
-            for (const [u, v, w] of criticalPath) {
-                console.log("Nodo " + u + " - Nodo " + v + ": " + w);
-                nodesSpanningTree.push([`node${u+1}`,`node${v+1}`]);
-
-            }
+        return { x: centroideX, y: centroideY };
         }
-        console.log(nodesSpanningTree)
-        updateEdgesWithSpanningTree(nodesSpanningTree);
-        adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
-        toggleSidebar();
-      }
-
-
-
-
-
-      function findCriticalPathMax(sourceNode, targetNode, graph, adjacencyMatrix) {
-          const dijkstra = new Dijkstra(graph);
-          const dist = dijkstra.dijkstraMax(sourceNode); // Usa dijkstraMax para encontrar la distancia máxima
-
-          if (dist[targetNode] === -Infinity) {
-              console.log("No hay camino entre el nodo " + sourceNode + " y el nodo " + targetNode);
-              return [];
-          }
-
-          const criticalPath = [];
-          let currentNode = targetNode;
-
-          while (currentNode !== sourceNode) {
-              for (let prevNode = 0; prevNode < graph.length; prevNode++) {
-                  if (graph[prevNode][currentNode] && dist[currentNode] === dist[prevNode] + graph[prevNode][currentNode]) {
-                      criticalPath.unshift([prevNode, currentNode, graph[prevNode][currentNode]]);
-                      currentNode = prevNode;
-                      break;
-                  }
-              }
-          }
-
-          return criticalPath;
-      }
-
-      function doDijkstraMax() {
-          // Crear una instancia de Dijkstra y encontrar los caminos más largos desde un nodo origen
-          const matrix = quitarSumas(adjacencyMatrix);
-          const graph = transformMatrixForDijkstra(matrix);
-          
-          const sourceNode = 0; // Cambia esto al nodo de origen deseado
-          const targetNode = 3; // Cambia esto al nodo de destino deseado
-
-          const criticalPath = findCriticalPathMax(sourceNode, targetNode, graph, adjacencyMatrix);
-
-          const nodesSpanningTree = [];
-            if (criticalPath.length > 0) {
-                console.log("Ruta crítica desde el nodo " + sourceNode + " al nodo " + targetNode + ":");
-                for (const [u, v, w] of criticalPath) {
-                    console.log("Nodo " + u + " - Nodo " + v + ": " + w);
-                    nodesSpanningTree.push([`node${u+1}`,`node${v+1}`]);
-
-                }
-            }
-            console.log(nodesSpanningTree)
-            updateEdgesWithSpanningTree(nodesSpanningTree);
-            adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
-            toggleSidebar();
-        }
-
-
-
-
-
-  function updateEdgesWithSpanningTree(nodeSpanningTree) {
-      // Primero, restablecemos el color y el ancho de todas las aristas a sus valores originales
-      for (const key in edges) {
-        if (Object.prototype.hasOwnProperty.call(edges, key)) {
-          edges[key].color = "black";
-          edges[key].width = 1;
-        }
-      }
-
-      // Luego, aplicamos los cambios en color y ancho basados en el nodeSpanningTree
-      for (const path of nodeSpanningTree) {
-        for (let i = 0; i < path.length - 1; i++) {
-          const sourceNode = path[i];
-          const targetNode = path[i + 1];
-
-          // Buscamos la arista correspondiente en el objeto edges
-          for (const key in edges) {
-            if (Object.prototype.hasOwnProperty.call(edges, key)) {
-              if (
-                (edges[key].source === sourceNode && edges[key].target === targetNode) ||
-                (edges[key].source === targetNode && edges[key].target === sourceNode)
-              ) {
-                // Cambiamos el color y el ancho de la arista
-                edges[key].color = "green"; // Puedes cambiar el color a tu preferencia
-                edges[key].width = 4; // Puedes cambiar el ancho a tu preferencia
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
 
  
   </script>
