@@ -294,9 +294,8 @@
         </tr>
       </table>
     </div>
-    <button @click="northWestMethod">Resolver Problema de Transporte</button>
-    <!--<button @click="northWestMethod">Resolver Problema de Transporte</button>
-    -->
+    <button @click="northWestMethod">Resolver MIN</button>
+    <button @click="northWestMethodMax">Resolver MAX</button>
   </div>
 
   <div class="modal10" v-if="isMatrixModalVisibleNorthWest">
@@ -1547,6 +1546,8 @@ const result = ref({});
 
 const respuestaNorthWestSolve = ref([]);
 
+var costoTotalMAX = "";
+
 const resolver = async () => {
   const url = "http://localhost:8080/optimizar_transporte";
 
@@ -1561,9 +1562,26 @@ const resolver = async () => {
     const decisiones = response.data.decisiones;
     const matrizDecisiones = [];
 
-    for (let i = 0; i < decisiones.length; i++) {
-      const fila = []; // Cada fila de la matriz
-      for (let j = 0; j < decisiones[i].length + 1; j++) {
+    let di = 0;
+    let dj = 0;
+    let pf = 0;
+    console.log("Matriz de decisiones: " + decisiones);
+
+    /***for (let di = 0; di < decisiones.length; di++) {
+      for (let dj = 0; dj < decisiones[di].length; dj++) {
+        console.log(
+          "di: [" + di + "] - dj: [" + dj + "] " + decisiones[di][dj]
+        );
+      }
+    } */
+
+    for (let i = 0; i < adjacencyMatrix.length - 1; i++) {
+      const fila = [];
+      if (pf == 1) {
+        di++;
+      }
+      dj = 0;
+      for (let j = 0; j < adjacencyMatrix[i].length - 1; j++) {
         if (i == 0 && j == 0) {
           fila.push(" ");
         } else {
@@ -1573,7 +1591,24 @@ const resolver = async () => {
             if (i >= 0 && j == 0) {
               fila.push(adjacencyMatrix[i][0]);
             } else {
-              fila.push(decisiones[i - 1][j - 1]);
+              //console.log(supplies.value.length);
+              if (
+                i > 0 &&
+                j > supplies.value.length &&
+                di < decisiones.length
+              ) {
+                console.log("di: " + di + " dj: " + dj);
+                console.log(
+                  "decisiones: " + decisiones[di][dj + decisiones.length - 1]
+                );
+
+                fila.push(decisiones[di][dj + decisiones.length - 1]);
+
+                pf = 1;
+                dj++;
+              } else {
+                fila.push(0);
+              }
             }
           }
         }
@@ -1597,9 +1632,10 @@ const resolver = async () => {
     respuestaNorthWestSolve.value = decisionesProcesadas.map((decision) => {
       return `De ${decision.source} a ${decision.destination}: ${decision.quantity} unidades con costo de ${decision.cost}`;
     });
-
     respuestaNorthWestSolve.value.push(
-      `Costo total de transporte: ${response.data.costo_total}`
+      (costoTotalMAX = `Costo total de transporte: ${
+        response.data.costo_total * -1
+      }``Costo total de transporte: ${response.data.costo_total * -1}`)
     );
 
     resultMatrix.value = matrizDecisiones;
@@ -1611,6 +1647,103 @@ const resolver = async () => {
     console.error("Hubo un error al enviar la solicitud:", error);
   }
 };
+
+//**NORTHWEST MAXIMIZACIÓN */
+
+/**MÉTODO MAX NORTHWEST */
+function northWestMethodMax() {
+  let totalCost = 0;
+  let result = [];
+  let i = 0,
+    j = supplies.value.length;
+
+  console.log("Iniciando northWestMethodMax");
+
+  if (
+    !adjacencyMatrix ||
+    !adjacencyMatrix.length ||
+    !adjacencyMatrix[0].length
+  ) {
+    console.error("Datos de matriz no inicializados");
+    return;
+  }
+
+  const extractedCosts = [];
+  for (let i = 1; i < adjacencyMatrix.length; i++) {
+    const row = [];
+    for (let j = 1; j < adjacencyMatrix[i].length; j++) {
+      row.push(adjacencyMatrix[i][j] * -1);
+    }
+    extractedCosts.push(row);
+  }
+  const extractedSupplies = [...supplies.value];
+  const extractedDemands = [...demands.value];
+
+  // Paso 2: Actualizar referencias en Vue
+  costos.value = extractedCosts;
+  oferta.value = extractedSupplies;
+  demanda.value = extractedDemands;
+
+  console.log("Iniciando northWestMethod");
+  console.log("Supplies:", supplies.value);
+  console.log("Demands:", demands.value);
+  console.log("Matriz de adyacencia:", adjacencyMatrix);
+
+  // Corregimos el acceso a las propiedades .length aquí
+  while (i < supplies.value.length && j < demands.value.length) {
+    console.log(`Iteración actual: i=${i}, j=${j}`);
+    console.log(`supplies[${i}] = ${supplies.value[i]}`);
+    console.log(`demands[${j}] = ${demands.value[j]}`);
+
+    let qty = Math.min(supplies.value[i], demands.value[j]);
+    console.log(`Cantidad mínima determinada: ${qty}`);
+
+    supplies.value[i] -= qty;
+    demands.value[j] -= qty;
+    console.log(`Nuevo valor de supplies en índice ${i}: ${supplies.value[i]}`);
+    console.log(`Nuevo valor de demands en índice ${j}: ${demands.value[j]}`);
+
+    result.push({
+      source: adjacencyMatrix[i + 1][0],
+      destination: adjacencyMatrix[0][j + 1],
+      quantity: qty,
+      cost: adjacencyMatrix[i + 1][j + 1],
+    });
+    totalCost += qty * adjacencyMatrix[i + 1][j + 1];
+
+    console.log("Resultado parcial:", result);
+
+    if (supplies.value[i] === 0) {
+      console.log(`Supplies en índice ${i} es 0, incrementando i`);
+      i++;
+    }
+    if (demands.value[j] === 0) {
+      console.log(`Demands en índice ${j} es 0, incrementando j`);
+      j++;
+    }
+  }
+
+  console.log("Resultado final:", result);
+
+  respuestaNorthWest.value = result.map((entry) => {
+    return `De ${entry.source} a ${entry.destination}: ${entry.quantity} unidades con costo de ${entry.cost}`;
+  });
+
+  respuestaNorthWest.value.push(`Costo total de transporte: ${totalCost}`);
+
+  // Mostrar el modal
+
+  isResultadoNorthWestVisible.value = false;
+  isMatrixNorthWestModalVisible.value = false;
+
+  // Paso 3: Llamada a resolver
+  resolver();
+  //isMatrixModalVisibleNorthWest.value = true;
+
+  return result;
+}
+
+/**FIN MAX */
 </script>
 
 <style scoped>

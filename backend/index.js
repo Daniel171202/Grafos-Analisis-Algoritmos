@@ -33,3 +33,22 @@ app.post("/optimizar_transporte", (req, res) => {
     res.status(500).send(`Error al ejecutar el script de Python: ${data}`);
   });
 });
+
+app.post("/optimizar_transporte_max", (req, res) => {
+  // Convertir los datos de entrada a una cadena que Python pueda evaluar
+  const dataString = JSON.stringify(req.body);
+
+  const pythonProcess = spawn("python", ["transporte_optimizer_max.py"]);
+  pythonProcess.stdin.write(dataString);
+  pythonProcess.stdin.end();
+
+  pythonProcess.stdout.on("data", (data) => {
+    const result = JSON.parse(data);
+    res.json(result);
+  });
+
+  pythonProcess.stderr.on("data", (data) => {
+    console.error(`Error en Python: ${data}`);
+    res.status(500).send(`Error al ejecutar el script de Python: ${data}`);
+  });
+});
