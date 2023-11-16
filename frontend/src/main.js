@@ -8,6 +8,8 @@ import "v-network-graph/lib/style.css";
 import GrafoComponente from "./components/GrafoComponente.vue";
 import HomePage from "./components/homePage.vue";
 import Asignacion from "./components/grafoMetodo.vue";
+import Sorts from "./components/sortsPage.vue";
+import Arboles from "./components/ArbolComponente.vue";
 
 const routes = [
   {
@@ -25,6 +27,26 @@ const routes = [
     path: "/Asignación",
     component: Asignacion,
   },
+  {
+    name: "Sorts",
+    path: "/Sorts",
+    component: Sorts,
+  },
+  {
+    name: "Arboles",
+    path: "/Arboles",
+    component: Arboles,
+  },
+  {
+    name: "Algoritmos",
+    path: "/Algoritmos",  
+    component: () => import("./components/AlgoritmosComponente.vue"),
+  },
+  {
+    name: "Compet",
+    path: "/Compet",
+    component: () => import("./components/CompetComponente.vue"),
+  }
 ];
 const router = createRouter({
   history: createWebHistory(),

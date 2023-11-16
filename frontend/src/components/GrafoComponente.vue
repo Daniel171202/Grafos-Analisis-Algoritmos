@@ -81,6 +81,9 @@
           <button @click="usoAsignacionMax" class="btn-control-panel">
             Solucionar Algoritmo de Asignación Maximizacion
           </button>
+          <button @click="showMatrixNorthWestModal" class="btn-control-panel">
+            Método North West
+          </button>
         </div>
       </div>
     </div>
@@ -144,7 +147,8 @@
         <h3>Nombre Conexión:</h3>
         <label>Nombre:</label>
         <!--obtener el nombre del ultimo nodo y cambiarlo mediante el vmodel -->
-        <input type="text" v-model="edges[actualEdgeIndex].label" />
+        <!--<input type="text" v-model="edges[actualEdgeIndex].label" />
+        -->
         <br />
         <label>Peso: </label>
         <input type="number" v-model="edges[actualEdgeIndex].cost" />
@@ -225,23 +229,101 @@
   </div>
 
   <div class="modal7" v-if="isResultadoAsignacionVisible">
-      <div class="modal-content">
-        <span class="close" @click="hideResultadoAsignacion()">&times;</span>
-        <h4 style="font-size: 1.5rem; " v-for="linea in respuestaAsignacion" :key="linea"> {{ linea }}</h4>
-        
-      </div>
-  
+    <div class="modal-content">
+      <span class="close" @click="hideResultadoAsignacion()">&times;</span>
+      <h4
+        style="font-size: 1.5rem"
+        v-for="linea in respuestaAsignacion"
+        :key="linea"
+      >
+        {{ linea }}
+      </h4>
+    </div>
+  </div>
+
+  <div class="modal9" v-if="isResultadoNorthWestVisible">
+    <div class="modal-content">
+      <span class="close" @click="hideResultadoNorthWest()">&times;</span>
+      <h4 v-for="(linea, index) in respuestaNorthWestSolve" :key="index">
+        {{ linea }}
+      </h4>
+    </div>
+  </div>
+
+  <div class="modal8" v-if="isMatrixNorthWestModalVisible">
+    <div class="modal-content">
+      <span class="close" @click="hideMatrixNorthWestModal">&times;</span>
+      <h3>Matriz de Adyacencia:</h3>
+      <table class="adjacency-matrix">
+        <tr v-for="(row, rowIndex) in adjacencyMatrix" :key="rowIndex">
+          <td v-for="(value, colIndex) in row" :key="colIndex">
+            <template v-if="rowIndex === 0 || colIndex === 0">
+              <th>{{ value }}</th>
+            </template>
+            <template v-else>
+              {{ value }}
+            </template>
+          </td>
+          <!-- Mostrar oferta sólo si la suma de la fila no es 0 -->
+          <td v-if="rowIndex > 0 && row[row.length - 1] !== 0">
+            <input
+              type="number"
+              v-model="supplies[rowIndex - 1]"
+              placeholder="Oferta"
+            />
+          </td>
+        </tr>
+        <tr>
+          <!-- Mostrar demanda sólo si la suma de la columna no es 0 y no es la última columna -->
+          <td v-for="(value, colIndex) in adjacencyMatrix[0]" :key="colIndex">
+            <input
+              v-if="
+                colIndex > 0 &&
+                colIndex < adjacencyMatrix[0].length - 1 &&
+                getColumnSum(colIndex) !== 0
+              "
+              type="number"
+              v-model="demands[colIndex - 1]"
+              placeholder="Demanda"
+              style="width: 5vw"
+            />
+          </td>
+        </tr>
+      </table>
+    </div>
+    <button @click="northWestMethod">Resolver Problema de Transporte</button>
+    <!--<button @click="northWestMethod">Resolver Problema de Transporte</button>
+    -->
+  </div>
+
+  <div class="modal10" v-if="isMatrixModalVisibleNorthWest">
+    <div class="modal-content">
+      <span class="close" @click="hideMatrixModalNorthWest">&times;</span>
+      <h3>Matriz de Adyacencia:</h3>
+      <table class="adjacency-matrix">
+        <tr v-for="(row, rowIndex) in resultMatrix" :key="rowIndex">
+          <td v-for="(value, colIndex) in row" :key="colIndex">
+            <template v-if="rowIndex === 0 || colIndex === 0">
+              <th>{{ value }}</th>
+            </template>
+            <template v-else>
+              {{ value }}
+            </template>
+          </td>
+        </tr>
+      </table>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref } from "vue";
+import { reactive, ref, toRefs } from "vue";
 import { useRouter } from "vue-router";
 import data from "../assets/data.js";
 import "v-network-graph/lib/style.css";
 import * as vNG from "v-network-graph";
 import axios from "axios";
-import {Munkres } from 'munkres-js';
+import { Munkres } from "munkres-js";
 
 let nodes = reactive({ ...data.nodes });
 let edges = reactive({ ...data.edges });
@@ -249,14 +331,35 @@ let paths = reactive({ ...data.paths });
 
 var adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
 const isMatrixModalVisible = ref(false);
+const isMatrixModalVisibleNorthWest = ref(false);
+const isMatrixNorthWestModalVisible = ref(false);
 const isNodoModalVisible = ref(false);
 const isEdgeModalVisible = ref(false);
 const isSelectionVisible = ref(false);
 const isSaveVisible = ref(false);
 const isUpdateVisible = ref(false);
 const isResultadoAsignacionVisible = ref(false);
+const isResultadoNorthWestVisible = ref(false);
+const respuestaNorthWest = ref([]);
+
+/**problem grafos */
+const solucion = ref([]);
+const costoTotal = ref(0);
+
 let creatingEdge = false;
 let startNode = null;
+
+/**PARA NORTHWEST */
+let suppliesReactive = reactive(new Array(adjacencyMatrix.length - 2).fill(0)); // Excluimos fila de encabezado y de sumas
+let demandsReactive = reactive(
+  new Array(adjacencyMatrix[0].length - 2).fill(0)
+); // Excluimos columna de encabezado y de sumas
+
+// Desestructurando las propiedades reactivas
+const { supplies, demands } = toRefs({
+  supplies: suppliesReactive,
+  demands: demandsReactive,
+});
 
 let graphOptions = [];
 
@@ -345,8 +448,25 @@ function showMatrixModal() {
   isMatrixModalVisible.value = true;
 }
 
+function showMatrixModalNorthWest() {
+  isMatrixModalVisibleNorthWest.value = true;
+}
+
+function showMatrixNorthWestModal() {
+  adjacencyMatrix = createAdjacencyMatrix(nodes, edges);
+  isMatrixNorthWestModalVisible.value = true;
+}
+
 function hideMatrixModal() {
   isMatrixModalVisible.value = false;
+}
+
+function hideMatrixNorthWestModal() {
+  isMatrixNorthWestModalVisible.value = false;
+}
+
+function hideMatrixModalNorthWest() {
+  isMatrixModalVisibleNorthWest.value = false;
 }
 
 function showNodoModal() {
@@ -672,8 +792,7 @@ function createAdjacencyMatrix(nodes, edges) {
 function nameofEdge(edge) {
   const label = edge.label !== null ? edge.label : "";
   const cost = edge.cost !== null ? edge.cost : "";
-  const aux =
-    label || cost ? `${label && cost ? " " : ""}${cost}` : " ";
+  const aux = label || cost ? `${label && cost ? " " : ""}${cost}` : " ";
   return aux;
 }
 
@@ -736,11 +855,9 @@ function johnson() {
 
 /**fin función de Johnson */
 
+// Algoritmo de asignación
 
-
-  // Algoritmo de asignación
-
-  function hungarianAlgorithm(matrix) {
+function hungarianAlgorithm(matrix) {
   const numRows = matrix.length;
   const numCols = matrix[0].length;
 
@@ -754,7 +871,7 @@ function johnson() {
 
   // Paso 2: Reducir las columnas
   for (let j = 0; j < numCols; j++) {
-    const minInColumn = Math.min(...matrix.map(row => row[j]));
+    const minInColumn = Math.min(...matrix.map((row) => row[j]));
     for (let i = 0; i < numRows; i++) {
       matrix[i][j] -= minInColumn;
     }
@@ -777,8 +894,12 @@ function johnson() {
   }
 
   // Paso 3: Buscar ceros sin asignar
-  const unassignedRows = assignedRows.map((assigned, index) => !assigned ? index : -1).filter(index => index !== -1);
-  const unassignedCols = assignedCols.map((assigned, index) => !assigned ? index : -1).filter(index => index !== -1);
+  const unassignedRows = assignedRows
+    .map((assigned, index) => (!assigned ? index : -1))
+    .filter((index) => index !== -1);
+  const unassignedCols = assignedCols
+    .map((assigned, index) => (!assigned ? index : -1))
+    .filter((index) => index !== -1);
 
   while (unassignedCols.length > 0) {
     let row = -1;
@@ -819,7 +940,7 @@ function usoAsignacion() {
   const originalMatrix = adjacencyMatrix;
 
   // Obtener una matriz 3x3 reducida
-  const rowHeaders = originalMatrix.slice(1, 4).map(row => row[0]);
+  const rowHeaders = originalMatrix.slice(1, 4).map((row) => row[0]);
 
   // Obtener una matriz 3x3 reducida con encabezados y títulos de fila
   const matrix = [];
@@ -835,7 +956,7 @@ function usoAsignacion() {
 
   // Aplicar el algoritmo de asignación (máximización)
   let m = new Munkres();
-  let indices = m.compute(matrix.slice(1).map(row => row.slice(1)));
+  let indices = m.compute(matrix.slice(1).map((row) => row.slice(1)));
 
   // Imprimir la asignación en el formato deseado
   let respuesta = [];
@@ -845,23 +966,21 @@ function usoAsignacion() {
     const city = ` ${indices[i][1] + 1}`;
     const cost = matrix[indices[i][0] + 1][indices[i][1] + 1];
     console.log(`Asignar ${destination} a ${city} con un costo de ${cost}`);
-    respuesta.push( `Asignar ${destination} a ${city} con un costo de ${cost}`);
+    respuesta.push(`Asignar ${destination} a ${city} con un costo de ${cost}`);
     costoTotal += cost;
-
   }
-  respuesta.push( `Costo total: ${costoTotal}`);
+  respuesta.push(`Costo total: ${costoTotal}`);
   console.log(respuesta);
   respuestaAsignacion = respuesta;
   console.log(respuestaAsignacion);
   isResultadoAsignacionVisible.value = true;
 }
 
-
 function usoAsignacionMax() {
   const originalMatrix = adjacencyMatrix;
 
   // Obtener una matriz 3x3 reducida
-  const rowHeaders = originalMatrix.slice(1, 4).map(row => row[0]);
+  const rowHeaders = originalMatrix.slice(1, 4).map((row) => row[0]);
 
   // Obtener una matriz 3x3 reducida con encabezados y títulos de fila
   const matrix = [];
@@ -907,17 +1026,16 @@ function usoAsignacionMax() {
     const city = ` ${assignment[i][1] + 1}`;
     const cost = maxValue - assignmentMatrix[i][assignment[i][1]];
     console.log(`Asignar ${destination} a ${city} con un costo de ${cost}`);
-    respuesta.push( `Asignar ${destination} a ${city} con un costo de ${cost}`);
-    
+    respuesta.push(`Asignar ${destination} a ${city} con un costo de ${cost}`);
+
     costoTotal += cost;
   }
-  respuesta.push( `Costo total: ${costoTotal}`);
+  respuesta.push(`Costo total: ${costoTotal}`);
   console.log(respuesta);
   respuestaAsignacion = respuesta;
   console.log(respuestaAsignacion);
   isResultadoAsignacionVisible.value = true;
 }
-
 
 /**prueba */
 
@@ -937,8 +1055,12 @@ function getAdjacencyMatrixWithoutHeaders() {
   return numbersAdjacencyMatrix;
 }
 
-function hideResultadoAsignacion(){
+function hideResultadoAsignacion() {
   isResultadoAsignacionVisible.value = false;
+}
+
+function hideResultadoNorthWest() {
+  isResultadoNorthWestVisible.value = false;
 }
 
 function johnson2() {
@@ -1116,6 +1238,156 @@ function johnson3() {
   // Retorna paths para que puedas usarlo donde lo necesites
   return paths;
 }
+
+//función método NorthWest para problema de transporte
+
+function getColumnSum(colIndex) {
+  let sum = 0;
+  for (let i = 1; i < adjacencyMatrix.length; i++) {
+    // Empezamos desde 1 para excluir el encabezado
+    sum += adjacencyMatrix[i][colIndex];
+  }
+  return sum;
+}
+
+function northWestMethod() {
+  let totalCost = 0;
+  let result = [];
+  let i = 0,
+    j = supplies.value.length;
+
+  console.log("Iniciando northWestMethod");
+
+  if (
+    !adjacencyMatrix ||
+    !adjacencyMatrix.length ||
+    !adjacencyMatrix[0].length
+  ) {
+    console.error("Datos de matriz no inicializados");
+    return;
+  }
+
+  const extractedCosts = [];
+  for (let i = 1; i < adjacencyMatrix.length; i++) {
+    const row = [];
+    for (let j = 1; j < adjacencyMatrix[i].length; j++) {
+      row.push(adjacencyMatrix[i][j]);
+    }
+    extractedCosts.push(row);
+  }
+  const extractedSupplies = [...supplies.value];
+  const extractedDemands = [...demands.value];
+
+  // Paso 2: Actualizar referencias en Vue
+  costos.value = extractedCosts;
+  oferta.value = extractedSupplies;
+  demanda.value = extractedDemands;
+
+  console.log("Iniciando northWestMethod");
+  console.log("Supplies:", supplies.value);
+  console.log("Demands:", demands.value);
+  console.log("Matriz de adyacencia:", adjacencyMatrix);
+
+  // Corregimos el acceso a las propiedades .length aquí
+  while (i < supplies.value.length && j < demands.value.length) {
+    console.log(`Iteración actual: i=${i}, j=${j}`);
+    console.log(`supplies[${i}] = ${supplies.value[i]}`);
+    console.log(`demands[${j}] = ${demands.value[j]}`);
+
+    let qty = Math.min(supplies.value[i], demands.value[j]);
+    console.log(`Cantidad mínima determinada: ${qty}`);
+
+    supplies.value[i] -= qty;
+    demands.value[j] -= qty;
+    console.log(`Nuevo valor de supplies en índice ${i}: ${supplies.value[i]}`);
+    console.log(`Nuevo valor de demands en índice ${j}: ${demands.value[j]}`);
+
+    result.push({
+      source: adjacencyMatrix[i + 1][0],
+      destination: adjacencyMatrix[0][j + 1],
+      quantity: qty,
+      cost: adjacencyMatrix[i + 1][j + 1],
+    });
+    totalCost += qty * adjacencyMatrix[i + 1][j + 1];
+
+    console.log("Resultado parcial:", result);
+
+    if (supplies.value[i] === 0) {
+      console.log(`Supplies en índice ${i} es 0, incrementando i`);
+      i++;
+    }
+    if (demands.value[j] === 0) {
+      console.log(`Demands en índice ${j} es 0, incrementando j`);
+      j++;
+    }
+  }
+
+  console.log("Resultado final:", result);
+
+  respuestaNorthWest.value = result.map((entry) => {
+    return `De ${entry.source} a ${entry.destination}: ${entry.quantity} unidades con costo de ${entry.cost}`;
+  });
+
+  respuestaNorthWest.value.push(`Costo total de transporte: ${totalCost}`);
+
+  // Mostrar el modal
+  isMatrixModalVisibleNorthWest.value = false;
+  isResultadoNorthWestVisible.value = true;
+  isMatrixNorthWestModalVisible.value = false;
+
+  // Paso 3: Llamada a resolver
+  resolver();
+
+  return result;
+}
+
+//Funciones de complemento
+
+const costos = ref([]);
+const oferta = ref([]);
+const demanda = ref([]);
+const result = ref({});
+
+const respuestaNorthWestSolve = ref([]);
+
+const resolver = async () => {
+  const url = "http://localhost:8080/optimizar_transporte";
+
+  try {
+    const response = await axios.post(url, {
+      costos: costos.value,
+      oferta: oferta.value,
+      demanda: demanda.value,
+    });
+
+    const decisionesProcesadas = [];
+    const decisiones = response.data.decisiones;
+
+    for (let i = 0; i < decisiones.length; i++) {
+      for (let j = 0; j < decisiones[i].length; j++) {
+        if (decisiones[i][j] > 0) {
+          decisionesProcesadas.push({
+            source: adjacencyMatrix[i + 1][0], // Usando los nombres de la matriz de adyacencia
+            destination: adjacencyMatrix[0][j + 1], // Usando los nombres de la matriz de adyacencia
+            quantity: decisiones[i][j],
+            cost: costos.value[i][j],
+          });
+        }
+      }
+    }
+
+    respuestaNorthWestSolve.value = decisionesProcesadas.map((decision) => {
+      return `De ${decision.source} a ${decision.destination}: ${decision.quantity} unidades con costo de ${decision.cost}`;
+    });
+
+    respuestaNorthWestSolve.value.push(
+      `Costo total de transporte: ${response.data.costo_total}`
+    );
+    console.log(response.data);
+  } catch (error) {
+    console.error("Hubo un error al enviar la solicitud:", error);
+  }
+};
 </script>
 
 <style scoped>
@@ -1256,7 +1528,10 @@ body {
 .modal4 .btn-control-panel,
 .modal6 .btn-control-panel,
 .modal7 .btn-control-panel,
-.modal5 .btn-control-panel {
+.modal5 .btn-control-panel,
+.modal8 .btn-control-panel,
+.modal9 .btn-control-panel,
+.modal10 .btn-control-panel {
   width: 50%;
   height: auto;
   margin: 2%;
@@ -1276,6 +1551,20 @@ body {
 }
 
 .modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.modal10 {
   display: none;
   position: fixed;
   z-index: 1;
@@ -1356,8 +1645,34 @@ body {
   display: flex;
 }
 
-
 .modal7 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.modal9 {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+.modal8 {
   display: none;
   position: fixed;
   z-index: 1;
@@ -1386,13 +1701,16 @@ body {
 .modal4 .modal-content,
 .modal6 .modal-content,
 .modal7 .modal-content,
-.modal5 .modal-content {
+.modal5 .modal-content,
+.modal8 .modal-content,
+.modal9 .modal-content,
+.modal10 .modal-content {
   /**  background-color: #fff;
  */
   padding: 2.5%;
   border: 1px solid #888;
   width: 50%;
-  height: 25%;
+  height: auto;
   border-radius: 25px;
   position: relative;
   text-align: center;
@@ -1421,7 +1739,10 @@ body {
 .modal4 .modal-content h3,
 .modal6 .modal-content h3,
 .modal7 .modal-content h3,
-.modal5 .modal-content h3 {
+.modal5 .modal-content h3,
+.modal8 .modal-content h3,
+.modal9 .modal-content h3,
+.modal10 .modal-content h3 {
   margin-top: -2%;
   font-size: 2.2rem;
   color: #c63637;
@@ -1432,7 +1753,10 @@ body {
 .modal4 .modal-content input,
 .modal6 .modal-content input,
 .modal7 .modal-content input,
-.modal5 .modal-content input {
+.modal5 .modal-content input,
+.modal8 .modal-content input,
+.modal9 .modal-content input,
+.modal10 .modal-content input {
   height: auto;
   width: 50%;
   font-size: 1rem;
@@ -1558,7 +1882,10 @@ body {
   .modal4 .modal-content,
   .modal6 .modal-content,
   .modal7 .modal-content,
-  .modal5 .modal-content {
+  .modal5 .modal-content,
+  .modal8 .modal-content,
+  .modal9 .modal-content,
+  .modal10 .modal-content {
     /**  background-color: #fff;
  */
     width: 90%;
@@ -1570,7 +1897,10 @@ body {
   .modal4 .modal-content h3,
   .modal6 .modal-content h3,
   .modal7 .modal-content h3,
-  .modal5 .modal-content h3 {
+  .modal5 .modal-content h3,
+  .modal8 .modal-content h3,
+  .modal9 .modal-content h3,
+  .modal10 .modal-content h3 {
     font-size: 1.5rem;
     color: #c63637;
   }
@@ -1580,7 +1910,10 @@ body {
   .modal4 .modal-content input,
   .modal6 .modal-content input,
   .modal7 .modal-content input,
-  .modal5 .modal-content input {
+  .modal5 .modal-content input,
+  .modal8 .modal-content input,
+  .modal9 .modal-content input,
+  .modal10 .modal-content input {
     margin-top: 0%;
     height: 7%;
     width: 75%;
