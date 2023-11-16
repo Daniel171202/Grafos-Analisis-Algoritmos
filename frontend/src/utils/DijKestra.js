@@ -5,12 +5,8 @@ export default class Dijkstra {
     }
 
     dijkstraMin(source) {
-        const dist = new Array(this.V);
-        const visited = new Array(this.V);
-        for (let i = 0; i < this.V; i++) {
-            dist[i] = Infinity;
-            visited[i] = false;
-        }
+        const dist = new Array(this.V).fill(Infinity);
+        const visited = new Array(this.V).fill(false);
 
         dist[source] = 0;
 
@@ -19,7 +15,7 @@ export default class Dijkstra {
             visited[u] = true;
 
             for (let v = 0; v < this.V; v++) {
-                if (!visited[v] && this.graph[u][v] && dist[u] !== Infinity && dist[u] + this.graph[u][v] < dist[v]) {
+                if (!visited[v] && this.graph[u][v] !== undefined && dist[u] !== Infinity && dist[u] + this.graph[u][v] < dist[v]) {
                     dist[v] = dist[u] + this.graph[u][v];
                 }
             }
@@ -29,30 +25,24 @@ export default class Dijkstra {
     }
 
     dijkstraMax(source) {
-        const dist = new Array(this.V);
-        const visited = new Array(this.V);
-        for (let i = 0; i < this.V; i++) {
-            dist[i] = -Infinity; // Cambiado a -Infinity
-            visited[i] = false;
-        }
-    
+        const dist = new Array(this.V).fill(Number.NEGATIVE_INFINITY);
+        const visited = new Array(this.V).fill(false);
+
         dist[source] = 0;
-    
+
         for (let count = 0; count < this.V - 1; count++) {
             const u = this.maxDistance(dist, visited);
             visited[u] = true;
-    
+
             for (let v = 0; v < this.V; v++) {
-                if (!visited[v] && this.graph[u][v] && dist[u] !== -Infinity && dist[u] + this.graph[u][v] > dist[v]) {
+                if (!visited[v] && this.graph[u][v] !== undefined && dist[u] !== Number.NEGATIVE_INFINITY && dist[u] + this.graph[u][v] > dist[v]) {
                     dist[v] = dist[u] + this.graph[u][v];
                 }
             }
         }
-    
+
         return dist;
     }
-    
-    
 
     minDistance(dist, visited) {
         let min = Infinity;
@@ -69,7 +59,7 @@ export default class Dijkstra {
     }
 
     maxDistance(dist, visited) {
-        let max = -Infinity;
+        let max = Number.NEGATIVE_INFINITY;
         let maxIndex = -1;
 
         for (let v = 0; v < this.V; v++) {

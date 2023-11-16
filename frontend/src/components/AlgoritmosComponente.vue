@@ -83,7 +83,7 @@
             <button @click="doDijkstraMin" class="btn-control-panel">
               Algoritmo Dijkstra Minimo
             </button>
-            <button @click="doDijkstraMinMax" class="btn-control-panel">
+            <button @click="doDijkstraMax" class="btn-control-panel">
               Algoritmo Dijkstra Maximo
             </button>
             
@@ -796,11 +796,31 @@
 
         return transformedMatrix;
     }
+    function transformMatrixForDijkstraMax(matrix) {
+        const transformedMatrix = [];
+
+        for (let i = 1; i < matrix.length; i++) {
+            const row = [];
+            for (let j = 1; j < matrix[i].length; j++) {
+                if (matrix[i][j] === 0) {
+                    row.push(-Infinity); // Reemplazar los valores nulos con Infinity
+                } else {
+                    row.push(matrix[i][j]);
+                }
+            }
+            transformedMatrix.push(row);
+        }
+
+        return transformedMatrix;
+    }
+
 
 
     function findCriticalPathMin(sourceNode, targetNode, graph) {
         const dijkstra = new Dijkstra(graph);
+        console.log(dijkstra);
         const dist = dijkstra.dijkstraMin(sourceNode);
+        console.log(dist);
 
         if (dist[targetNode] === Infinity) {
             console.log("No hay camino entre el nodo " + sourceNode + " y el nodo " + targetNode);
@@ -911,8 +931,9 @@
 
       function findCriticalPathMax(sourceNode, targetNode, graph) {
           const dijkstra = new Dijkstra(graph);
+          console.log(dijkstra);
           const dist = dijkstra.dijkstraMax(sourceNode); // Usa dijkstraMax para encontrar la distancia máxima
-
+          console.log(dist);  
           if (dist[targetNode] === -Infinity) {
               console.log("No hay camino entre el nodo " + sourceNode + " y el nodo " + targetNode);
               return [];
@@ -937,7 +958,7 @@
       function doDijkstraMax() {
           // Crear una instancia de Dijkstra y encontrar los caminos más largos desde un nodo origen
           const matrix = quitarSumas(adjacencyMatrix);
-          const graph = transformMatrixForDijkstra(matrix);
+          const graph = transformMatrixForDijkstraMax(matrix);
           
           var sourceNode = selectedNodes.value[0]; // Cambia esto al nodo de origen deseado
         var targetNode = selectedNodes.value[1]; // Cambia esto al nodo de destino deseado
