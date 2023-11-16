@@ -314,6 +314,15 @@
           </td>
         </tr>
       </table>
+      <div>
+        <br />
+        <h3>Decisiones:</h3>
+        <ul>
+          <li v-for="decision in respuestaNorthWestSolve" :key="decision">
+            {{ decision }}
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 
@@ -1629,20 +1638,36 @@ const resolver = async () => {
       }
     }
 
-    respuestaNorthWestSolve.value = decisionesProcesadas.map((decision) => {
-      return `De ${decision.source} a ${decision.destination}: ${decision.quantity} unidades con costo de ${decision.cost}`;
-    });
-    respuestaNorthWestSolve.value.push(
-      (costoTotalMAX = `Costo total de transporte: ${
-        response.data.costo_total * -1
-      }``Costo total de transporte: ${response.data.costo_total * -1}`)
-    );
+    if (parseInt(response.data.costo_total) < 0) {
+      respuestaNorthWestSolve.value = decisionesProcesadas.map((decision) => {
+        return `De ${decision.source} a ${decision.destination}: ${
+          decision.quantity
+        } unidades con costo de ${parseInt(decision.cost) * -1}`;
+      });
+      respuestaNorthWestSolve.value.push(
+        (costoTotalMAX = `Costo total de transporte: ${
+          parseInt(response.data.costo_total) * -1
+        }`)
+      );
+    } else {
+      respuestaNorthWestSolve.value = decisionesProcesadas.map((decision) => {
+        return `De ${decision.source} a ${decision.destination}: ${
+          decision.quantity
+        } unidades con costo de ${parseInt(decision.cost)}`;
+      });
+      respuestaNorthWestSolve.value.push(
+        (costoTotalMAX = `Costo total de transporte: ${parseInt(
+          response.data.costo_total
+        )}`)
+      );
+    }
+    console.log("Respuesta NORTHWEST MAX: " + respuestaNorthWestSolve.value);
 
     resultMatrix.value = matrizDecisiones;
     isMatrixModalVisibleNorthWest.value = true;
 
-    console.log(matrizDecisiones);
-    console.log(response.data);
+    /**console.log(matrizDecisiones);
+    console.log(response.data); */
   } catch (error) {
     console.error("Hubo un error al enviar la solicitud:", error);
   }
