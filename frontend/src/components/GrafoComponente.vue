@@ -84,6 +84,9 @@
           <button @click="showMatrixNorthWestModal" class="btn-control-panel">
             Método North West
           </button>
+          <button @click="handleClick" class="btn-control-panel">
+            Calcular Dijkstra
+          </button>
         </div>
       </div>
     </div>
@@ -291,9 +294,8 @@
         </tr>
       </table>
     </div>
-    <button @click="northWestMethod">Resolver Problema de Transporte</button>
-    <!--<button @click="northWestMethod">Resolver Problema de Transporte</button>
-    -->
+    <button @click="northWestMethod">Resolver MIN</button>
+    <button @click="northWestMethodMax">Resolver MAX</button>
   </div>
 
   <div class="modal10" v-if="isMatrixModalVisibleNorthWest">
@@ -312,9 +314,64 @@
           </td>
         </tr>
       </table>
+      <div>
+        <br />
+        <h3>Decisiones:</h3>
+        <ul>
+          <li v-for="decision in respuestaNorthWestSolve" :key="decision">
+            {{ decision }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div ref="errorModal" class="modal-error">
+    <div class="modal-content-error">
+      <span @click="closeErrorModal" class="close-btn-error">&times;</span>
+      <p style="font-size: 2rem">
+        No se puede conectar un nodo reciente con uno más antiguo. No está
+        permitida la reversa.
+      </p>
     </div>
   </div>
 </template>
+
+<style scoped>
+.modal-error {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1;
+}
+
+.modal-content-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 10vh;
+  width: auto;
+  padding: 5% 7%;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.close-btn-error {
+  color: #aaa;
+  float: right;
+  font-size: 3rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close-btn-error:hover {
+  color: red;
+}
+</style>
 
 <script setup>
 import { reactive, ref, toRefs } from "vue";
@@ -341,6 +398,8 @@ const isUpdateVisible = ref(false);
 const isResultadoAsignacionVisible = ref(false);
 const isResultadoNorthWestVisible = ref(false);
 const respuestaNorthWest = ref([]);
+const resultMatrix = ref([]);
+const errorModal = ref(null);
 
 /**problem grafos */
 const solucion = ref([]);
@@ -689,16 +748,29 @@ function addLoopEdge() {
   }
 }
 /**función loop */
+const showErrorModal = () => {
+  errorModal.value.style.display = "block";
+};
 
+const closeErrorModal = () => {
+  errorModal.value.style.display = "none";
+};
 function addEdge(edge) {
   if (selectedNodes.value.length !== 2 && selectedNodes.value.length !== 1) {
-    // Si no hay exactamente dos nodos seleccionados, muestra un mensaje de error o realiza alguna otra acción de manejo de errores.
     console.error(
       "Selecciona exactamente dos nodos o un nodo para agregar un bucle."
     );
     return;
   }
+
   const [source, target] = selectedNodes.value;
+
+  // Comprueba si el nodo source es más reciente que el nodo target
+  if (source > target) {
+    showErrorModal();
+    return;
+  }
+
   const edgeId = `edge${nextEdgeIndex.value++}`;
   edges[edgeId] = { source, target, ...edge };
   actualEdgeIndex.value = edgeId;
@@ -795,6 +867,138 @@ function nameofEdge(edge) {
   const aux = label || cost ? `${label && cost ? " " : ""}${cost}` : " ";
   return aux;
 }
+
+/**FUNCIÓN DE APLICACIÓN DE DJIKSTRA */
+function getNodeNames(matrix) {
+  return matrix[0].slice(1, -1);
+}
+
+function getWeightMatrix(matrix) {
+  return matrix.slice(1, -1).map((row) => row.slice(1, -1));
+}
+
+function extractGraphData(nodes, edges) {
+  const matrix = createAdjacencyMatrix(nodes, edges);
+  const nodeNames = getNodeNames(matrix);
+  const weightMatrix = getWeightMatrix(matrix);
+  console.log("Nombres de nodos:", nodeNames);
+  console.log("Matriz de adyacencia (solo pesos):", weightMatrix);
+  // Puedes devolver los valores si necesitas hacer algo con ellos después del log
+  return { nodeNames, weightMatrix };
+}
+
+// Función de Dijkstra para encontrar el camino más corto desde un nodo inicial
+function dijkstra(weightMatrix, startNode) {
+  const distances = Array(weightMatrix.length).fill(Infinity);
+  const visited = Array(weightMatrix.length).fill(false);
+  const predecessors = Array(weightMatrix.length).fill(null);
+
+  // La distancia del nodo inicial a sí mismo es siempre 0
+  distances[startNode] = 0;
+
+  // Encuentra el nodo con la menor distancia desde el conjunto de nodos no visitados
+  const findMinDistanceNode = (distances, visited) => {
+    let minDistance = Infinity;
+    let minIndex = -1;
+
+    for (let i = 0; i < distances.length; i++) {
+      if (!visited[i] && distances[i] < minDistance) {
+        minDistance = distances[i];
+        minIndex = i;
+      }
+    }
+
+    return minIndex;
+  };
+
+  for (let i = 0; i < distances.length; i++) {
+    const minIndex = findMinDistanceNode(distances, visited);
+    visited[minIndex] = true;
+
+    for (let j = 0; j < weightMatrix.length; j++) {
+      if (weightMatrix[minIndex][j] && !visited[j]) {
+        const currentDistance = distances[minIndex] + weightMatrix[minIndex][j];
+        if (currentDistance < distances[j]) {
+          distances[j] = currentDistance;
+          predecessors[j] = minIndex;
+        }
+      }
+    }
+  }
+
+  return { distances, predecessors };
+}
+
+// Esta función reconstruye el camino más corto desde el nodo inicial hasta el nodo destino.
+function reconstructPath(predecessors, startNode, endNode) {
+  let path = [];
+  let currentNode = endNode;
+
+  while (currentNode !== startNode) {
+    path.unshift(currentNode);
+    currentNode = predecessors[currentNode];
+    if (currentNode === null) {
+      return [];
+    }
+  }
+
+  path.unshift(startNode);
+  return path;
+}
+
+function applyDijkstra(nodes, weightMatrix) {
+  console.log("Nodos:", nodes);
+  console.log("Matriz de pesos:", weightMatrix);
+
+  const startNode = 0;
+  console.log("Nodo de inicio:", startNode);
+
+  const results = dijkstra(weightMatrix, startNode);
+  console.log("Resultados de Dijkstra:", results);
+
+  for (let endNode = 0; endNode < nodes.length; endNode++) {
+    console.log(`Nodo final actual: ${endNode} (${nodes[endNode]})`);
+
+    if (startNode !== endNode) {
+      console.log(
+        `Procesando ruta del nodo de inicio ${startNode} al nodo final ${endNode}`
+      );
+
+      const pathIndices = reconstructPath(
+        results.predecessors,
+        startNode,
+        endNode
+      );
+      console.log(`Índices de ruta para el nodo ${endNode}:`, pathIndices);
+
+      if (pathIndices.length > 0) {
+        const pathNames = pathIndices.map((index) => nodes[index]);
+        console.log(`Nombres de ruta para el nodo ${endNode}:`, pathNames);
+
+        const pathCost = results.distances[endNode];
+        console.log(`Costo de la ruta para el nodo ${endNode}:`, pathCost);
+
+        console.log(
+          `Ruta más corta de '${nodes[startNode]}' a '${
+            nodes[endNode]
+          }': ${pathNames.join(" -> ")}, Costo: ${pathCost}`
+        );
+      } else {
+        console.log(
+          `No hay ruta disponible de '${nodes[startNode]}' a '${nodes[endNode]}'`
+        );
+      }
+    }
+  }
+}
+
+function handleClick() {
+  console.log("Botón presionado");
+  const { nodeNames, weightMatrix } = extractGraphData(nodes, edges);
+  applyDijkstra(nodeNames, weightMatrix);
+}
+
+/** FIN DE LA FUNCIÓN */
 
 /**Función de Johnson */
 
@@ -1331,12 +1535,13 @@ function northWestMethod() {
   respuestaNorthWest.value.push(`Costo total de transporte: ${totalCost}`);
 
   // Mostrar el modal
-  isMatrixModalVisibleNorthWest.value = false;
-  isResultadoNorthWestVisible.value = true;
+
+  isResultadoNorthWestVisible.value = false;
   isMatrixNorthWestModalVisible.value = false;
 
   // Paso 3: Llamada a resolver
   resolver();
+  //isMatrixModalVisibleNorthWest.value = true;
 
   return result;
 }
@@ -1350,8 +1555,10 @@ const result = ref({});
 
 const respuestaNorthWestSolve = ref([]);
 
+var costoTotalMAX = "";
+
 const resolver = async () => {
-  const url = "http://localhost:8080/optimizar_transporte";
+  const url = "http://ins.lpz.ucb.edu.bo:8084/optimizar_transporte";
 
   try {
     const response = await axios.post(url, {
@@ -1362,6 +1569,61 @@ const resolver = async () => {
 
     const decisionesProcesadas = [];
     const decisiones = response.data.decisiones;
+    const matrizDecisiones = [];
+
+    let di = 0;
+    let dj = 0;
+    let pf = 0;
+    console.log("Matriz de decisiones: " + decisiones);
+
+    /***for (let di = 0; di < decisiones.length; di++) {
+      for (let dj = 0; dj < decisiones[di].length; dj++) {
+        console.log(
+          "di: [" + di + "] - dj: [" + dj + "] " + decisiones[di][dj]
+        );
+      }
+    } */
+
+    for (let i = 0; i < adjacencyMatrix.length - 1; i++) {
+      const fila = [];
+      if (pf == 1) {
+        di++;
+      }
+      dj = 0;
+      for (let j = 0; j < adjacencyMatrix[i].length - 1; j++) {
+        if (i == 0 && j == 0) {
+          fila.push(" ");
+        } else {
+          if (j >= 0 && i == 0) {
+            fila.push(adjacencyMatrix[0][j]);
+          } else {
+            if (i >= 0 && j == 0) {
+              fila.push(adjacencyMatrix[i][0]);
+            } else {
+              //console.log(supplies.value.length);
+              if (
+                i > 0 &&
+                j > supplies.value.length &&
+                di < decisiones.length
+              ) {
+                console.log("di: " + di + " dj: " + dj);
+                console.log(
+                  "decisiones: " + decisiones[di][dj + decisiones.length - 1]
+                );
+
+                fila.push(decisiones[di][dj + decisiones.length - 1]);
+
+                pf = 1;
+                dj++;
+              } else {
+                fila.push(0);
+              }
+            }
+          }
+        }
+      }
+      matrizDecisiones.push(fila); // Añadimos la fila a la matrizDecisiones
+    }
 
     for (let i = 0; i < decisiones.length; i++) {
       for (let j = 0; j < decisiones[i].length; j++) {
@@ -1376,18 +1638,137 @@ const resolver = async () => {
       }
     }
 
-    respuestaNorthWestSolve.value = decisionesProcesadas.map((decision) => {
-      return `De ${decision.source} a ${decision.destination}: ${decision.quantity} unidades con costo de ${decision.cost}`;
-    });
+    if (parseInt(response.data.costo_total) < 0) {
+      respuestaNorthWestSolve.value = decisionesProcesadas.map((decision) => {
+        return `De ${decision.source} a ${decision.destination}: ${
+          decision.quantity
+        } unidades con costo de ${parseInt(decision.cost) * -1}`;
+      });
+      respuestaNorthWestSolve.value.push(
+        (costoTotalMAX = `Costo total de transporte: ${
+          parseInt(response.data.costo_total) * -1
+        }`)
+      );
+    } else {
+      respuestaNorthWestSolve.value = decisionesProcesadas.map((decision) => {
+        return `De ${decision.source} a ${decision.destination}: ${
+          decision.quantity
+        } unidades con costo de ${parseInt(decision.cost)}`;
+      });
+      respuestaNorthWestSolve.value.push(
+        (costoTotalMAX = `Costo total de transporte: ${parseInt(
+          response.data.costo_total
+        )}`)
+      );
+    }
+    console.log("Respuesta NORTHWEST MAX: " + respuestaNorthWestSolve.value);
 
-    respuestaNorthWestSolve.value.push(
-      `Costo total de transporte: ${response.data.costo_total}`
-    );
-    console.log(response.data);
+    resultMatrix.value = matrizDecisiones;
+    isMatrixModalVisibleNorthWest.value = true;
+
+    /**console.log(matrizDecisiones);
+    console.log(response.data); */
   } catch (error) {
     console.error("Hubo un error al enviar la solicitud:", error);
   }
 };
+
+//**NORTHWEST MAXIMIZACIÓN */
+
+/**MÉTODO MAX NORTHWEST */
+function northWestMethodMax() {
+  let totalCost = 0;
+  let result = [];
+  let i = 0,
+    j = supplies.value.length;
+
+  console.log("Iniciando northWestMethodMax");
+
+  if (
+    !adjacencyMatrix ||
+    !adjacencyMatrix.length ||
+    !adjacencyMatrix[0].length
+  ) {
+    console.error("Datos de matriz no inicializados");
+    return;
+  }
+
+  const extractedCosts = [];
+  for (let i = 1; i < adjacencyMatrix.length; i++) {
+    const row = [];
+    for (let j = 1; j < adjacencyMatrix[i].length; j++) {
+      row.push(adjacencyMatrix[i][j] * -1);
+    }
+    extractedCosts.push(row);
+  }
+  const extractedSupplies = [...supplies.value];
+  const extractedDemands = [...demands.value];
+
+  // Paso 2: Actualizar referencias en Vue
+  costos.value = extractedCosts;
+  oferta.value = extractedSupplies;
+  demanda.value = extractedDemands;
+
+  console.log("Iniciando northWestMethod");
+  console.log("Supplies:", supplies.value);
+  console.log("Demands:", demands.value);
+  console.log("Matriz de adyacencia:", adjacencyMatrix);
+
+  // Corregimos el acceso a las propiedades .length aquí
+  while (i < supplies.value.length && j < demands.value.length) {
+    console.log(`Iteración actual: i=${i}, j=${j}`);
+    console.log(`supplies[${i}] = ${supplies.value[i]}`);
+    console.log(`demands[${j}] = ${demands.value[j]}`);
+
+    let qty = Math.min(supplies.value[i], demands.value[j]);
+    console.log(`Cantidad mínima determinada: ${qty}`);
+
+    supplies.value[i] -= qty;
+    demands.value[j] -= qty;
+    console.log(`Nuevo valor de supplies en índice ${i}: ${supplies.value[i]}`);
+    console.log(`Nuevo valor de demands en índice ${j}: ${demands.value[j]}`);
+
+    result.push({
+      source: adjacencyMatrix[i + 1][0],
+      destination: adjacencyMatrix[0][j + 1],
+      quantity: qty,
+      cost: adjacencyMatrix[i + 1][j + 1],
+    });
+    totalCost += qty * adjacencyMatrix[i + 1][j + 1];
+
+    console.log("Resultado parcial:", result);
+
+    if (supplies.value[i] === 0) {
+      console.log(`Supplies en índice ${i} es 0, incrementando i`);
+      i++;
+    }
+    if (demands.value[j] === 0) {
+      console.log(`Demands en índice ${j} es 0, incrementando j`);
+      j++;
+    }
+  }
+
+  console.log("Resultado final:", result);
+
+  respuestaNorthWest.value = result.map((entry) => {
+    return `De ${entry.source} a ${entry.destination}: ${entry.quantity} unidades con costo de ${entry.cost}`;
+  });
+
+  respuestaNorthWest.value.push(`Costo total de transporte: ${totalCost}`);
+
+  // Mostrar el modal
+
+  isResultadoNorthWestVisible.value = false;
+  isMatrixNorthWestModalVisible.value = false;
+
+  // Paso 3: Llamada a resolver
+  resolver();
+  //isMatrixModalVisibleNorthWest.value = true;
+
+  return result;
+}
+
+/**FIN MAX */
 </script>
 
 <style scoped>

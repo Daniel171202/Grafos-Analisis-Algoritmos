@@ -4,9 +4,8 @@ import mysql from "mysql2";
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "12345678",
+  password: "mysql.2023",
   database: "proyecto_grafos",
-  //database: "feria_del_empleo_pruebas",
 });
 
 function handleDisconnect() {
