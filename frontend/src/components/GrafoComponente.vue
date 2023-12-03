@@ -1558,7 +1558,7 @@ const respuestaNorthWestSolve = ref([]);
 var costoTotalMAX = "";
 
 const resolver = async () => {
-  const url = "http://localhost:8080/optimizar_transporte";
+  const url = "http://ins.lpz.ucb.edu.bo:8084/optimizar_transporte";
 
   try {
     const response = await axios.post(url, {
